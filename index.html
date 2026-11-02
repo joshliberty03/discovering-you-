@@ -2497,6 +2497,7 @@ button.linklike { background: none; border: none; padding: 0; color: var(--accen
 .pf-table .linkbtn { text-align: left; }
 @media (max-width: 640px) { .pf-rank { margin-left: 0; } }
 
+.ag-now{background:var(--land);outline:2px solid var(--accent)}.bl-pick{margin:8px 0}.bl-par{gap:14px}.bl-par select{min-height:44px;font:inherit;margin-left:6px}.bl-out{font-size:1.05rem}
 .hl-tag { display: inline-block; font-size: .72rem; font-weight: 700; border-radius: 999px; padding: 1px 9px 1px 8px; border: 1px solid var(--line); background: var(--land); color: var(--fg); margin-left: 4px; vertical-align: 1px; white-space: nowrap; }
 .hl-tag::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: var(--muted); }
 .hl-t::before { background: var(--water); } .hl-d::before { background: var(--fire); } .hl-m::before { background: var(--earth); } .hl-s::before { background: var(--wood); }
@@ -2663,6 +2664,10 @@ button.linklike { background: none; border: none; padding: 0; color: var(--accen
       <div id="tab-fkarma" class="out" role="tabpanel" aria-labelledby="t-fkarma" hidden></div>
 
       <div id="tab-oldmed" class="out" role="tabpanel" aria-labelledby="t-oldmed" hidden></div>
+
+      <div id="tab-blood" class="out" role="tabpanel" aria-labelledby="t-blood" hidden></div>
+
+      <div id="tab-ages" class="out" role="tabpanel" aria-labelledby="t-ages" hidden></div>
 
       <div id="tab-numerology" class="out" role="tabpanel" aria-labelledby="t-numerology" hidden></div>
 
@@ -5671,7 +5676,8 @@ function jumpNavHTML(groups) {
 function natalJumpNav() {
   return jumpNavHTML([
     ["Your chart", [["astro-wheel", "Back to the wheel"], ["astro-overview", "Overview"], ["astro-bigthree", "Big Three"], ["astro-balance", "Balance"]]],
-    ["In depth", [["astro-planets", "Planets"], ["astro-dominant", "Dominant & degrees"], ["astro-positions", "Positions"], ["astro-houses", "Houses"], ["astro-aspects", "Aspects"], ["astro-patterns", "Patterns & stars"]]]
+    ["In depth", [["astro-planets", "Planets"], ["astro-dominant", "Dominant & degrees"], ["astro-positions", "Positions"], ["astro-houses", "Houses"], ["astro-aspects", "Aspects"], ["astro-patterns", "Patterns & stars"]]],
+    ["Transits", [["nt-report", "Transit report"], ["nt-progress", "Year by year"], ["nt-transits", "Every contact"], ["nt-watch", "What to watch"]]]
   ]);
 }
 function astroJumpNav() {
@@ -25887,9 +25893,12 @@ GR_SUBS[HL_TAB] = HL_SUBS; GR.sub[HL_TAB] = "over"; GR_RENDER[HL_TAB] = hlRender
   };
   function natalHTML(P) {
     var cd = parseDate($("chartdate").value) || parseDate(isoToday());
-    var full = _renderAstro0(P, { chartJD: jdUTFrom(cd.y, cd.m, cd.d, 12, 0, 0), startJD: jdUTFrom(NOW.getFullYear(), NOW.getMonth() + 1, NOW.getDate(), 12, 0, 0), todayJD: jdUTFrom(NOW.getFullYear(), NOW.getMonth() + 1, NOW.getDate(), 12, 0, 0), pastLife: false, pastYears: 0, futureYears: 0 });
+    var full = _renderAstro0(P, { chartJD: jdUTFrom(cd.y, cd.m, cd.d, 12, 0, 0), startJD: jdUTFrom(NOW.getFullYear(), NOW.getMonth() + 1, NOW.getDate(), 12, 0, 0), todayJD: jdUTFrom(NOW.getFullYear(), NOW.getMonth() + 1, NOW.getDate(), 12, 0, 0), pastLife: false, pastYears: 1, futureYears: 3 });
     var a = full.indexOf("<!--NATAL_START-->"), b = full.indexOf("<!--NATAL_END-->");
-    return a < 0 || b < 0 ? "" : full.slice(a + 18, b);
+    var t0 = full.indexOf('<span id="astro-progress"></span>'), t1 = full.indexOf('<section class="panel" id="astro-predictive"');
+    var tr = t0 > 0 && t1 > t0 ? full.slice(t0, t1).replace(/astro-/g, "nt-") : "";
+    var head = tr ? '<section class="panel" id="nt-report"><h2>Your transit report</h2><p class="lede">Transits show where the planets are moving now, and when they touch the points in your natal chart. Below you get the year-by-year pulse, every exact contact for the past year and the next three, and what to watch for.</p><p class="gr-note">Astrology is a symbolic tradition. Dates come from real planet positions, but the meanings are interpretation, and tests have not shown that transits predict events.</p><div class="gr-row"><button type="button" class="mc-btn" data-gr="go" data-a="astro" data-b="">Solar return, progressions and Saturn return</button></div></section>' : "";
+    return a < 0 || b < 0 ? "" : full.slice(a + 18, b) + head + tr;
   }
   EXPLAIN.natal = ["Natal chart", "A map of the sky at the exact minute and place you were born: your Sun, Moon and Rising, every planet, the twelve houses and the aspects between them.",
     ["<b>Overview and Big Three</b>: your Sun, Moon and Rising in depth", "<b>Balance</b>: elements and qualities across your chart", "<b>Chart wheel</b>: the whole chart drawn as one picture", "<b>Planets, houses and aspects</b>: each placement explained", "<b>Positions table</b>: exact degrees, house, motion and dignity", "<b>Patterns and fixed stars</b>: bigger shapes in the chart"],
@@ -25924,6 +25933,390 @@ GR_SUBS[HL_TAB] = HL_SUBS; GR.sub[HL_TAB] = "over"; GR_RENDER[HL_TAB] = hlRender
   var tabEl = document.createElement("div"); tabEl.id = "tab-natal"; tabEl.className = "out"; tabEl.setAttribute("role", "tabpanel"); tabEl.setAttribute("aria-labelledby", "t-natal"); tabEl.hidden = true;
   var an = $("tab-numerology"); an.parentNode.insertBefore(tabEl, an);
   state.dirty.natal = true;
+  try { buildNav(); } catch (e) {}
+  try { var cur = $("t-" + state.tab); if (cur) cur.setAttribute("aria-selected", "true"); } catch (e) {}
+})();
+
+
+/* ======================================================================
+   Blood type: science, lore, spiritual views, tie-in to you
+   ====================================================================== */
+var BL_TAB = "blood";
+var BL_V = { S: ["Well supported", "hl-s"], M: ["Mixed evidence", "hl-m"], D: ["Not supported", "hl-d"], T: ["Tradition", "hl-t"] };
+var BL_SUBS = [["over", "Big picture"], ["mine", "My type"], ["sci", "The science"], ["lore", "Personality lore"], ["spi", "Spiritual views"], ["myths", "Myth or evidence?"], ["test", "Does it fit me?"]];
+var BL_COMPAT = [["O-", "O-", "Everyone"], ["O+", "O+, O-", "O+, A+, B+, AB+"], ["A-", "A-, O-", "A-, A+, AB-, AB+"], ["A+", "A+, A-, O+, O-", "A+, AB+"], ["B-", "B-, O-", "B-, B+, AB-, AB+"], ["B+", "B+, B-, O+, O-", "B+, AB+"], ["AB-", "AB-, A-, B-, O-", "AB-, AB+"], ["AB+", "Everyone", "AB+"]];
+var BL_SHARE = [["O", 44, "about 44%"], ["A", 42, "about 42%"], ["B", 10, "about 10%"], ["AB", 4, "about 4%"]];
+var BL_TYPES = {
+  A: { name: "Type A", share: "About 42% of Americans (A+ is 36%, A- is 6%).", bio: "Red cells carry A antigens. Plasma carries anti-B antibodies.", words: "careful, orderly, considerate, reserved, perfectionist, anxious",
+    lore: "In Japanese blood-type lore, A is the neat, responsible planner who keeps feelings in check and worries about getting things right.",
+    sci: "Group A, like B and AB, has a higher chance of venous blood clots than group O. Some studies link A to a somewhat higher chance of stomach cancer in certain populations. These are small shifts compared with smoking, blood pressure or family history.",
+    play: ["Earth", "Root chakra", "The Builder"], prompts: ["Where does my careful side protect me, and where does it hold me back?", "What would I try if it did not have to be perfect?", "Who do I trust enough to show the messy draft?"] },
+  B: { name: "Type B", share: "About 10% of Americans (B+ is 8.5%, B- is 1.5%).", bio: "Red cells carry B antigens. Plasma carries anti-A antibodies.", words: "passionate, curious, independent, creative, goes their own way",
+    lore: "In Japanese lore, B is the free spirit who follows interests and bends rules. It also carries the most unfair stereotype, as selfish or unreliable.",
+    sci: "Group B shares the higher clot risk of the non-O groups. It is most common in Central and South Asia and much less common in the Americas. No solid study links it to a personality.",
+    play: ["Fire", "Solar plexus", "The Explorer"], prompts: ["What do I follow even when nobody else sees the point?", "When has my independence helped people, and when has it left them out?", "What would finishing look like for the thing I started last?"] },
+  AB: { name: "Type AB", share: "About 4% of Americans, the rarest of the four main types.", bio: "Red cells carry both A and B antigens. Plasma carries neither antibody, so AB+ can receive red cells from anyone and AB plasma can go to anyone.", words: "rational, adaptable, artistic, two-sided, hard to read",
+    lore: "Japanese lore pictures AB as a blend of A and B: cool and logical on one side, dreamy and quirky on the other. It is the type most often called mysterious.",
+    sci: "Non-O clot risk applies. One large US study found AB linked to more memory trouble later in life. The link was modest, could reflect blood-vessel health, and says nothing about personality.",
+    play: ["Air", "Third eye", "The Bridge"], prompts: ["Which two sides of me do people see, and do they get the whole picture?", "Where do I switch modes, and what do I need when I switch?", "What would it mean to let one side lead for a week?"] },
+  O: { name: "Type O", share: "About 44% of Americans (O+ is 37%, O- is 7%), the most common.", bio: "Red cells carry neither A nor B antigens. Plasma carries both antibodies. O- red cells are used in emergencies when a type is unknown.", words: "confident, sociable, ambitious, steady, natural leader",
+    lore: "Japanese lore sees O as the outgoing, goal-driven one who takes charge and stays calm. The stereotype flip side is stubborn.",
+    sci: "Group O has a lower risk of venous clots and lower odds of severe malaria. It has a higher risk of stomach ulcers linked to the H. pylori germ and of more severe cholera. Pancreatic cancer risk is somewhat lower in several studies.",
+    play: ["Water", "Sacral chakra", "The Heart"], prompts: ["Where do I lead because I want to, and where because nobody else will?", "What do I want that is not a goal?", "Who gets to see me when I am not in charge?"] }
+};
+var BL_SCI = [
+  ["abo", "How the ABO system works", "Discovered 1901", "S", "Red blood cells wear sugar markers called antigens. Type A cells wear A, type B wear B, AB wear both, and O wear neither. Your plasma carries antibodies against the markers you lack.", "Karl Landsteiner found the groups in 1901 and won a Nobel Prize for it in 1930. Every safe transfusion since depends on it.", "This is solid, textbook biology. The markers sit on the outside of the cells and also on other tissues, which is part of why researchers keep finding links to disease.", "Your type is a fact about your cells, not about your character."],
+  ["rh", "The Rh factor and pregnancy", "Rh was named in the 1940s", "S", "Rh is a second marker on red cells. People who have it are Rh positive, people who lack it are Rh negative.", "If an Rh-negative mother carries an Rh-positive baby, her body can make antibodies that threaten a later pregnancy. A shot of Rh immune globulin, in use since 1968, prevents this.", "This is one of the clearest public-health successes of the last century. It is why blood type is checked in prenatal care.", "If you are Rh negative and may become pregnant, tell your care team. It is routine and very treatable."],
+  ["clot", "Blood type and clotting", "Studied for decades", "S", "People with A, B or AB have higher levels of two clotting proteins, von Willebrand factor and factor VIII, than people with O.", "Studies of venous clots (such as in the leg or lung) find non-O types at roughly 1.5 to 2 times the risk of type O.", "The finding is consistent across many studies. Most people of any type never have a clot. Age, surgery, long immobility, hormones and family history matter much more.", "Do not change your life over this. Do mention your family history of clots to a clinician."],
+  ["malaria", "Malaria and type O", "Since the 1970s", "S", "In severe malaria, infected red cells clump onto healthy ones and block small vessels. Type O cells clump less.", "Studies in Africa and Asia find type O children less likely to develop the severe form.", "Researchers think this helped shape how common each type is in malaria regions. The effect is real, but it is about severity, not about catching the germ.", "A reminder that blood types are part of an old contest between people and germs."],
+  ["gi", "Germs, ulcers and cholera", "Mid 1900s on", "S", "Some germs latch onto the same sugar markers that define blood type.", "Type O has more stomach ulcers (H. pylori) and a more severe course of cholera. Many people also make their type markers in saliva and gut lining (called secretors), and secretor status changes risk for norovirus, the common stomach bug.", "These links are genuine and are measured in large groups. For one person, the difference is small.", "Hand washing and clean water matter far more than your type."],
+  ["cancer", "Cancer risk", "Large cohorts, 2000s on", "M", "Several big studies found small differences by type. Group A shows a somewhat higher stomach cancer risk. Non-O types show a somewhat higher pancreatic cancer risk.", "Some of the reason may be the H. pylori germ and inflammation, but this is still being worked out.", "The effects are modest and vary between populations. Blood type is not used to decide screening.", "Follow standard screening guidelines for your age, not your blood type."],
+  ["covid", "COVID-19", "2020 on", "M", "Early studies in 2020 suggested type A had a slightly higher risk of infection and type O a slightly lower one.", "Genetic studies and large reviews followed.", "Later work found any effect was small and not consistent across studies, and it was far smaller than age, vaccination or health conditions.", "A good example of an early finding that shrank as evidence grew."],
+  ["cog", "Memory later in life", "One large study, 2014", "M", "A US study of about 30,000 older adults found that AB was linked to more memory problems than other types.", "The idea is that the clotting proteins that run higher in non-O types may affect blood vessels in the brain.", "It is a single study, the link was modest, and it shows an association, not a cause.", "Heart and blood-vessel care (blood pressure, exercise, sleep) is still the best-known protection."],
+  ["evol", "Why do four types exist at all?", "Open research", "M", "The A and B forms are older than humans. Apes and monkeys have versions of them, and the O form arose more than once.", "One leading idea is balancing selection: germs adapt to the common types, so rarer types get an edge, and the mix stays varied.", "This is an active research area. It is not a story about outside origins or special bloodlines.", "Variety in blood types is a sign of a long fight with infection, not a ranking."],
+  ["beyond", "More than ABO", "Dozens of systems", "S", "Scientists recognize more than 40 blood group systems. ABO and Rh are the best known. Others include Kell, Duffy and Kidd.", "The Duffy-negative type is very common in people of African ancestry and protects against one kind of malaria. A very rare type called Bombay (hh) looks like O but cannot receive normal O blood.", "Matching beyond ABO matters for people who need many transfusions, such as with sickle cell disease.", "If you ever need regular transfusions, ask which extra markers your team matches."],
+  ["where", "Where each type is common", "Population data", "S", "Type O is very common among Indigenous peoples of Central and South America. Type B peaks in Central and South Asia. Type A is common across parts of Europe.", "Rh negative is about 15% of people of European ancestry, under 1% in much of East Asia, and highest in Basque populations, roughly a quarter to a third.", "These patterns reflect migration, infection and chance over thousands of years.", "Blood type says something about large populations and history, and very little about an individual."],
+  ["donate", "Donating blood", "A real way to use your type", "S", "O- red cells can go to nearly anyone, which makes them the emergency default. AB plasma can go to anyone. Type O and Rh-negative donors are always in demand.", "Hospitals need every type. Platelets and plasma are needed too, and each has its own best match.", "In the US, a typical donation takes under an hour. Eligibility rules vary, so check with a blood service.", "The most meaningful thing blood type does is help somebody else. If you can, donate."]
+];
+var BL_LORE = [
+  ["jp", "Ketsueki-gata: the Japanese system", "1927 to today", "T", "A psychology paper in 1927 by Takeji Furukawa proposed that blood type shapes temperament. In the 1970s, writer Masahiko Nomi turned the idea into bestselling books, and it became a daily pastime.", "In Japan, Korea and Taiwan, people ask each other's type like a sign. It shows up on dating forms, in magazines, TV shows, video games and even in character profiles in anime.", "The original 1927 work used tiny groups and weak methods. It never became part of mainstream psychology.", "Treat it as a fun conversation starter, like a horoscope, not as a fact about you."],
+  ["studies", "What studies found", "1990s to 2010s", "D", "Researchers in several countries asked people to take careful personality tests, then compared answers by blood type.", "Studies including Rogers and Glendon (2003), Cramer and Imaike (2002), and Wu, Lindsted and Lee (2005) found no meaningful relationship. Analyses of large national samples in Japan and the US, including work by Kengo Nawata, reached the same result.", "A few small studies found slight differences, but they did not repeat across groups. With enough comparisons, some chance differences always show up.", "If a claim only works when you already know the answer, it has not been tested well."],
+  ["barnum", "Why it feels true", "The Barnum effect", "S", "Descriptions like careful, creative or confident fit almost everyone a little. People also notice hits and forget misses.", "Once you know the stereotype, you may start to act it out or read your own behavior through it. Some researchers suggest this is why people in cultures where it is popular rate themselves in line with it.", "This is well-studied psychology, and it also explains horoscopes and many online quizzes.", "A description feeling accurate does not show that the label caused it."],
+  ["bura", "Blood-type harassment", "2000s on", "D", "In Japan the word bura-hara describes unfair treatment based on blood type.", "Reports describe children teased, workplace jokes, and some employers or matchmaking events using type to sort people. Broadcasting watchdogs have asked stations to go easy on blood-type programs.", "Judging someone's character by a medical trait has no scientific basis, and it can harm.", "Enjoy the lore lightly and never use it to judge or exclude people."]
+];
+var BL_SPI = [
+  ["life", "Blood as the life force", "Across cultures", "T", "In many traditions blood stands for life itself and for family. The Hebrew Bible says the life of the flesh is in the blood (Leviticus 17:11). Ideas such as blood ties, bloodlines and blood brothers come from this.", "In Christianity the cup at communion is a symbol of blood. In Traditional Chinese Medicine, xue (blood) is nourished by qi and supports sleep and mood. In Ayurveda, rakta is one of the body's tissues. Greek medicine made blood one of the four humors, linked with the sanguine temperament.", "These are meaning systems and medical theories of their day. They describe what blood meant, and they did not know about blood groups, which were found in 1901.", "Honor the symbol for what it carries. It is about life and belonging, not a type."],
+  ["modern", "Modern spiritual maps of blood type", "20th and 21st centuries", "T", "Some modern writers link types with elements, chakras, planets or soul roles, for example A with Earth and the root chakra, or O with Water.", "You can see one common version on the My type page. Sources disagree with each other, because no old tradition tied blood groups to these systems, since the groups were unknown until 1901.", "There is no way to test these links, and they were invented recently. They work as imagination and as prompts for reflection.", "If a map helps you think about yourself, use it, and keep it loose."],
+  ["rhneg", "Rh-negative bloodline lore", "Popular on the internet", "D", "Some online stories claim Rh-negative people descend from ancient civilizations, outside visitors or a special lineage.", "The stories point to the fact that Rh-negative people lack a protein other people have, and that the group is common among Basque people.", "Rh negative is explained by a common gene change, known in humans, with a full set of ordinary inheritance. Nothing in the evidence points to special origins. A Czech scientist, Jaroslav Flegr, has proposed that Rh status interacts with a parasite called Toxoplasma to affect reaction time. This is small and debated, and is not a bloodline claim.", "Rh negative is a normal variation. Ask your care team the practical questions: pregnancy, transfusion."],
+  ["anc", "Ancestry and blood", "Real and imagined", "M", "Blood groups differ across populations, so they carry traces of ancient migration and disease history.", "People sometimes use their type to guess origins or to claim a heritage.", "At the level of a person, your type cannot tell you where your family comes from. DNA ancestry tests use hundreds of thousands of markers, not one.", "Use family stories and records for ancestry. Use blood type for medicine."]
+];
+var BL_MYTHS = [
+  ["Your blood type decides your personality.", "Not supported.", "Careful studies in several countries found no meaningful link. The idea is a cultural pastime."],
+  ["Type O is the universal donor.", "Mostly true.", "O- red cells can be given to nearly anyone in an emergency. For plasma the rule flips: AB plasma is the universal one."],
+  ["AB+ is the rarest type.", "Not quite.", "AB- is the rarest of the eight, at under 1% of Americans. AB+ is about 3.4%."],
+  ["A baby can have a type that neither parent has.", "True.", "An A parent and a B parent can have an AB or an O child. Genes are shuffled, so the child can differ from both."],
+  ["Rh-negative people come from an ancient or alien lineage.", "Not supported.", "Rh negative comes from a common gene change. Its frequency is high among Basque people and low in East Asia, which reflects population history."],
+  ["You should eat according to your blood type.", "Not supported.", "A 2013 systematic review found no evidence for blood-type diets, and a 2014 study found that diet effects did not depend on blood type."],
+  ["Your blood type can change.", "Rarely true.", "A bone marrow transplant can change it, and some rare conditions weaken the markers. Otherwise it stays the same for life."],
+  ["Mosquitoes prefer type O.", "Weak evidence.", "A few small studies suggested it. The evidence is thin, and other things such as breath, heat and skin chemicals matter more."],
+  ["Blood type affects your risk of some diseases.", "True, but small.", "Clotting, some infections and some cancers show differences. They are far smaller than the effect of habits and family history."],
+  ["People in Japan judge others by blood type.", "Partly true.", "It is a popular pastime and a source of stereotypes. Some people have faced unfair treatment, and critics call it bura-hara."]
+];
+var BL_Q = [
+  ["A", "I like a plan, and I double-check my work."], ["B", "I follow my own interests even when others disagree."], ["O", "I feel at ease taking charge of a group."], ["AB", "People say I am hard to pin down. I have a practical side and a dreamy side."],
+  ["A", "I keep my feelings private until I know someone well."], ["B", "I get absorbed in what I love and lose track of everything else."], ["O", "I set big goals and go after them."], ["AB", "I switch easily between being social and wanting to be alone."]
+];
+var BL_SOURCES = [["ABO blood group system (overview)", "https://en.wikipedia.org/wiki/ABO_blood_group_system"], ["Rh blood group system (overview)", "https://en.wikipedia.org/wiki/Rh_blood_group_system"], ["Blood type personality theory (overview and sources)", "https://en.wikipedia.org/wiki/Blood_type_personality_theory"], ["Blood type diet (overview and sources)", "https://en.wikipedia.org/wiki/Blood_type_diet"], ["MedlinePlus: blood typing", "https://medlineplus.gov/lab-tests/blood-typing/"]];
+
+var _pfLenBase3 = pfLen;
+pfLen = function (q) { return q === "bl" ? BL_Q.length : _pfLenBase3(q); };
+
+function blTag(v) { var x = BL_V[v]; return '<span class="hl-tag ' + x[1] + '">' + esc(x[0]) + "</span>"; }
+function blLegend() { return '<p class="hl-leg">' + ["S", "M", "D", "T"].map(blTag).join(" ") + ' <span class="gr-meta">Well supported means many studies agree. Mixed means findings are small or inconsistent. Not supported means tests found nothing. Tradition means a cultural or spiritual view that cannot be tested like a drug.</span></p>'; }
+function blSel() { return grGet("bl", { abo: "", rh: "" }); }
+function blFull() { var s = blSel(); return s.abo ? s.abo + (s.rh === "pos" ? "+" : s.rh === "neg" ? "-" : "") : ""; }
+function blPicker() {
+  var s = blSel();
+  var chip = function (k, v, label) { return '<button type="button" class="pm-chip' + (s[k] === v ? " on" : "") + '" data-bl="pick" data-k="' + k + '" data-v="' + v + '" aria-pressed="' + (s[k] === v) + '">' + label + "</button>"; };
+  return '<div class="bl-pick"><div class="d3-chips" role="group" aria-label="Your ABO type">' + ["A", "B", "AB", "O"].map(function (t) { return chip("abo", t, "Type " + t); }).join("") + '</div><div class="d3-chips" role="group" aria-label="Your Rh factor">' + chip("rh", "pos", "Rh positive (+)") + chip("rh", "neg", "Rh negative (-)") + '</div><p class="gr-meta">Not sure of your type? A blood donation, a prenatal test or a lab test tells you, and so can your medical records. You can still read everything here. Your choice saves on this device only.</p></div>';
+}
+function blItem(it) {
+  var body = '<p class="hl-when">' + esc(it[2]) + "</p>" + '<div class="pf-grid"><div class="pf-box"><h4>The idea</h4><p>' + esc(it[4]) + '</p></div><div class="pf-box"><h4>Where it shows up</h4><p>' + esc(it[5]) + '</p></div><div class="pf-box pf-hon"><h4>What research says</h4><p>' + esc(it[6]) + '</p></div><div class="pf-box"><h4>What it means for you</h4><p>' + esc(it[7]) + "</p></div></div>";
+  return hlDet("bl-" + it[0], it[1], blTag(it[3]), body);
+}
+function blNote() { return '<p class="gr-note">This is education, not medical advice. Blood type shifts some risks a little, and it should not change your care. Talk to a clinician about your own health.</p>'; }
+function blCompatTable() {
+  return '<div class="scroll"><table class="gr-table pf-table"><caption>Red cell transfusion: who can give to whom (emergency and matching rules aside)</caption><thead><tr><th scope="col">Your type</th><th scope="col">Can receive from</th><th scope="col">Can give to</th></tr></thead><tbody>' + BL_COMPAT.map(function (r) { return "<tr><th scope=\"row\">" + esc(r[0]) + "</th><td>" + esc(r[1]) + "</td><td>" + esc(r[2]) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+}
+function blKids(a, b) {
+  var G = { A: [["A", "A"], ["A", "O"]], B: [["B", "B"], ["B", "O"]], AB: [["A", "B"]], O: [["O", "O"]] }, out = {};
+  function ph(x, y) { var hasA = x === "A" || y === "A", hasB = x === "B" || y === "B"; return hasA && hasB ? "AB" : hasA ? "A" : hasB ? "B" : "O"; }
+  G[a].forEach(function (g1) { G[b].forEach(function (g2) { g1.forEach(function (x) { g2.forEach(function (y) { out[ph(x, y)] = 1; }); }); }); });
+  return ["A", "B", "AB", "O"].filter(function (t) { return out[t]; });
+}
+function blInherit() {
+  var o = grGet("bl-par", { a: "A", b: "B" }), kids = blKids(o.a, o.b);
+  var sel = function (k) { return '<label>' + (k === "a" ? "Parent one" : "Parent two") + ' <select data-bl="par" data-k="' + k + '">' + ["A", "B", "AB", "O"].map(function (t) { return '<option value="' + t + '"' + (o[k] === t ? " selected" : "") + ">Type " + t + "</option>"; }).join("") + "</select></label>"; };
+  return '<div class="gr-row bl-par">' + sel("a") + sel("b") + '</div><p class="bl-out" aria-live="polite">A child could be: <b>' + kids.map(function (t) { return "Type " + t; }).join(", ") + '</b></p><p class="gr-meta">Each parent passes on one of two ABO genes. A and B are dominant over O, so an A parent might carry a hidden O. This lists the possible ABO types only (very rare exceptions exist, such as the Bombay type). Rh follows its own rules.</p>';
+}
+function blOver() {
+  var rows = BL_SHARE.map(function (r) { return [r[0], r[1] / 50, r[2]]; });
+  return '<section class="panel"><h2>Blood type: what is real, what is lore</h2><p class="lede">Your blood type is real biology that saves lives. The idea that it shapes your personality is a popular tradition that studies have not supported. This section gives you both, with a clear label on each claim.</p>' + blLegend() +
+    "<h3>Choose your type</h3>" + blPicker() + '<div class="gr-row">' + pfBtn("See my type", BL_TAB, "mine", "mc-btn gr-primary") + pfBtn("The science", BL_TAB, "sci") + pfBtn("Personality lore", BL_TAB, "lore") + pfBtn("Spiritual views", BL_TAB, "spi") + pfBtn("Does it fit me?", BL_TAB, "test") + "</div></section>" +
+    '<section class="panel"><h2>Four lenses on one fluid</h2><div class="pf-grid">' +
+    [["Science", "How the system works, who can give blood to whom, and what studies show about health.", "sci"], ["Personality lore", "The Japanese blood-type tradition, what researchers tested and why it feels true.", "lore"], ["Spiritual views", "Blood as life force across cultures, and modern maps of type, element and chakra.", "spi"], ["You", "Your type next to your sign, number and chart, as a prompt for reflection.", "mine"]].map(function (c) { return '<div class="pf-box"><h4>' + esc(c[0]) + "</h4><p>" + esc(c[1]) + "</p>" + pfBtn("Open", BL_TAB, c[2], "mc-btn") + "</div>"; }).join("") + "</div></section>" +
+    '<section class="panel"><h2>How common is each type?</h2><p class="lede">Rough share of Americans. Numbers differ a lot around the world.</p>' + pfMeters(rows) + blNote() + "</section>";
+}
+function blTie(t) {
+  var P = state.cur, chips = [], H = [];
+  try { if (P && P.natal) H = profHeadlines(P); } catch (e) {}
+  ["Life path", "Sun sign", "Moon sign", "Rising sign", "Day Master", "Human Design type"].forEach(function (l) { H.forEach(function (h) { if (h.l === l) chips.push([h.l, h.v, h.t]); }); });
+  var body;
+  if (chips.length) {
+    body = '<div class="pgrid">' + chips.map(function (c) { return '<button type="button" class="hubbtn" data-gr="go" data-a="' + c[2] + '" data-b=""><b>' + esc(c[1]) + '</b><span>' + esc(c[0]) + "</span></button>"; }).join("") + '</div><p>The lore calls ' + esc(t.name) + " <b>" + esc(t.words) + "</b>. Put those words beside the results above. Where do they agree? Where do they clash? Which one sounds more like the person your friends know?</p>";
+  } else {
+    body = "<p>Add your birth details and this page lines up your type with your life path, sun sign, Day Master and Human Design. Until then, the questions below work on their own.</p>" + pfBtn("Add my birth details", "profile", "", "mc-btn");
+  }
+  return '<section class="panel"><h2>Tie it to who you are</h2><p class="lede">No study links blood type to a zodiac sign or a life path. Still, several systems describing you at once can be useful as mirrors. Use this as a reflection exercise, not a prediction.</p>' + body +
+    '<h3>Questions for ' + esc(t.name) + '</h3><ol class="hl-ol">' + t.prompts.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ol>" +
+    '<div class="gr-row">' + grWA("My blood type is " + blFull() + ". What I notice about how I see myself is: ", "Write about this") + "</div></section>";
+}
+function blMine() {
+  var s = blSel();
+  if (!s.abo) return '<section class="panel"><h2>My type</h2><p class="lede">Pick your type to see its science, lore and spiritual correspondences, all labeled.</p>' + blPicker() + "</section>";
+  var t = BL_TYPES[s.abo], full = blFull(), rh = s.rh === "pos" ? "Rh positive: you have the Rh protein. About 85% of people do." : s.rh === "neg" ? "Rh negative: you lack the Rh protein. This matters for pregnancy and transfusion. About 15% of people of European ancestry are Rh negative, and far fewer in East Asia." : "Add your Rh factor above to see transfusion matches.";
+  var cp = null; BL_COMPAT.forEach(function (r) { if (r[0] === full) cp = r; });
+  return '<section class="panel"><h2>Blood type ' + esc(full) + '</h2>' + blPicker() + '<div class="pf-grid"><div class="pf-box"><h4>How common</h4><p>' + esc(t.share) + '</p></div><div class="pf-box"><h4>What it is</h4><p>' + esc(t.bio) + '</p></div><div class="pf-box"><h4>Rh factor</h4><p>' + esc(rh) + "</p></div>" + (cp ? '<div class="pf-box"><h4>Red cell matches</h4><p>You can receive from: ' + esc(cp[1]) + ". You can give to: " + esc(cp[2]) + ".</p></div>" : "") + "</div></section>" +
+    '<section class="panel"><h2>The science ' + blTag("S") + '</h2><p>' + esc(t.sci) + "</p>" + pfBtn("All the science", BL_TAB, "sci", "mc-btn") + "</section>" +
+    '<section class="panel"><h2>Personality lore ' + blTag("D") + '</h2><p><b>What the lore says:</b> ' + esc(t.words) + ".</p><p>" + esc(t.lore) + '</p><p class="gr-note">Studies that tested this found no meaningful link. The words fit many people, which is why they feel true.</p>' + pfBtn("What studies found", BL_TAB, "lore", "mc-btn") + "</section>" +
+    '<section class="panel"><h2>A modern spiritual map ' + blTag("T") + '</h2><div class="pf-grid"><div class="pf-box"><h4>Element</h4><p>' + esc(t.play[0]) + '</p></div><div class="pf-box"><h4>Energy center</h4><p>' + esc(t.play[1]) + '</p></div><div class="pf-box"><h4>Archetype</h4><p>' + esc(t.play[2]) + '</p></div></div><p class="gr-note">This is one common version. Sources disagree, no old tradition made these links, and they cannot be tested. Treat them as imagery for reflection.</p></section>' + blTie(t) + blNote();
+}
+function blSci() {
+  return '<section class="panel"><h2>The science of blood types</h2><p class="lede">What the research says about how blood types work and how they relate to health.</p>' + blLegend() + "</section>" +
+    '<section class="panel"><h2>Who can give blood to whom</h2>' + blCompatTable() + '<p class="gr-meta">Real transfusions also match other markers and are checked by a lab. Plasma follows the opposite rule: AB plasma can go to anyone.</p></section>' +
+    '<section class="panel"><h2>What could my child be?</h2>' + blInherit() + "</section>" +
+    '<section class="panel pf-list"><h2>The findings, one by one</h2>' + BL_SCI.map(blItem).join("") + blNote() + "</section>";
+}
+function blLore() {
+  return '<section class="panel"><h2>Blood type and personality</h2><p class="lede">Where the idea came from, what researchers tested, and why it feels so true.</p>' + blLegend() + "</section>" +
+    '<section class="panel pf-list"><h2>The story, one by one</h2>' + BL_LORE.map(blItem).join("") + "</section>" +
+    '<section class="panel"><h2>The traits people claim</h2><div class="scroll"><table class="gr-table pf-table"><thead><tr><th scope="col">Type</th><th scope="col">Claimed words</th></tr></thead><tbody>' + ["A", "B", "AB", "O"].map(function (k) { return '<tr><th scope="row">' + k + "</th><td>" + esc(BL_TYPES[k].words) + "</td></tr>"; }).join("") + '</tbody></table></div><p class="gr-note">Listed so you can see them, not because they are true. They did not hold up when tested.</p></section>';
+}
+function blSpi() {
+  return '<section class="panel"><h2>Blood in spiritual traditions</h2><p class="lede">Blood has stood for life, family and sacrifice for a very long time. Here is what that means, and where modern ideas take it too far.</p>' + blLegend() + "</section>" +
+    '<section class="panel pf-list"><h2>The views, one by one</h2>' + BL_SPI.map(blItem).join("") + "</section>" +
+    '<section class="panel"><h2>The blood type diet</h2><p>A popular book in the 1990s said each type should eat differently, as an ancestor would have. ' + blTag("D") + "</p><p>A 2013 review of the research found no evidence that eating by blood type improves health. A 2014 study found that diets helped or did not help people regardless of their type. Some of the foods recommended are healthy, and some of the advice is ordinary good sense, but the blood-type reasoning does not hold up.</p>" + blNote() + "</section>";
+}
+function blMyths() {
+  var o = grGet("bl-myth", {});
+  var cards = BL_MYTHS.map(function (m, i) {
+    var on = !!o[i];
+    return '<li class="hl-myth' + (on ? " on" : "") + '"><button type="button" class="hl-mb" data-bl="myth" data-i="' + i + '" aria-expanded="' + on + '"><span class="hl-mc">Claim</span><b>' + esc(m[0]) + '</b><span class="hl-mh">' + (on ? "Hide the answer" : "Tap to reveal") + "</span></button>" + (on ? '<div class="hl-ma"><span class="hl-mv">' + esc(m[1]) + "</span> " + esc(m[2]) + "</div>" : "") + "</li>";
+  }).join("");
+  var seen = Object.keys(o).filter(function (k) { return o[k]; }).length;
+  return '<section class="panel"><h2>Myth or evidence?</h2><p class="lede">Ten claims about blood types. Decide what you think, then tap to see the answer.</p><p class="gr-prog">' + seen + " of " + BL_MYTHS.length + ' revealed.</p><ul class="hl-mlist">' + cards + '</ul><div class="gr-row"><button type="button" class="mc-btn" data-bl="mythall">Reveal all</button><button type="button" class="mc-btn" data-bl="mythreset">Hide all</button></div></section>';
+}
+function blScore() {
+  var a = pfAns("bl"), sum = { A: 0, B: 0, O: 0, AB: 0 };
+  BL_Q.forEach(function (q, i) { if (a[i]) sum[q[0]] += Number(a[i]); });
+  return ["A", "B", "AB", "O"].map(function (k) { return { k: k, v: (sum[k] - 2) / 8 }; }).sort(function (x, y) { return y.v - x.v; });
+}
+function blTest() {
+  var items = BL_Q.map(function (q, i) { return [i, q[1]]; }), res = "";
+  if (pfDone("bl")) {
+    var sc = blScore(), top = sc[0], tie = sc[1] && sc[1].v === top.v, mine = blSel().abo;
+    res = '<section class="panel"><h2>You answered most like Type ' + esc(top.k) + (tie ? " (tied with Type " + esc(sc[1].k) + ")" : "") + '</h2>' + pfMeters(sc.map(function (r) { return ["Type " + r.k, Math.max(0, r.v), Math.round(Math.max(0, r.v) * 100) + "%"]; })) +
+      (mine ? "<p>Your chosen type is <b>Type " + esc(mine) + "</b>. " + (mine === top.k ? "It matched, which happens about one time in four by chance alone, and more often for O and A, since they are the most common." : "It did not match, which is what researchers expect. Matches happen about as often as chance.") + "</p>" : "<p>Choose your type on the My type page to compare.</p>") +
+      '<p class="gr-note">This only measures how you describe yourself against the lore. It does not measure anything about your blood. Descriptions this broad fit most people, which is the Barnum effect.</p><div class="gr-row">' + grWA("I answered most like Type " + top.k + ". What I notice is: ", "Write about this") + "</div></section>";
+  }
+  return '<section class="panel"><h2>Does the lore fit you?</h2><p class="lede">Eight statements, about a minute. Rate each from 1 to 5, then compare the result to your real type.</p>' + pfLikert("bl", items) + pfQuizFoot("bl", BL_TAB) + "</section>" + res;
+}
+function blRender() {
+  var s = GR.sub[BL_TAB], body;
+  if (s === "mine") body = blMine(); else if (s === "sci") body = blSci(); else if (s === "lore") body = blLore(); else if (s === "spi") body = blSpi(); else if (s === "myths") body = blMyths(); else if (s === "test") body = blTest(); else body = blOver();
+  return explainHTML(BL_TAB) + grSubsNav(BL_TAB) + body;
+}
+
+EXPLAIN[BL_TAB] = ["Blood type: science, lore and you", "Your blood type is real biology, and it is also the center of a popular personality tradition. This section keeps the two apart with clear labels.",
+  ["<b>My type</b>: your type's facts, lore, spiritual map and a tie-in to your chart", "<b>The science</b>: who can give to whom, inheritance, and what studies show", "<b>Personality lore</b> and <b>Spiritual views</b>: where the ideas came from", "<b>Myth or evidence?</b> and <b>Does it fit me?</b>: a flip-card game and a short quiz"],
+  "Choose your type first, then open My type.",
+  "Blood type is not shown to shape personality. It shifts some health risks slightly. This is education, not medical advice.",
+  "Blood type: real science, fun lore, honest labels."];
+TAB_LABEL[BL_TAB] = "Blood type";
+GR_TABS[BL_TAB] = { label: "Blood type", group: "Your chart" };
+GR_SUBS[BL_TAB] = BL_SUBS; GR.sub[BL_TAB] = "over"; GR_RENDER[BL_TAB] = blRender;
+(function () {
+  if (TABS.indexOf(BL_TAB) === -1) TABS.push(BL_TAB); state.dirty[BL_TAB] = true;
+  SECTION_GUIDE.forEach(function (g) { if (g[0] === "Your chart" && g[2].indexOf(BL_TAB) === -1) { var i = g[2].indexOf("tarot"); g[2].splice(i === -1 ? g[2].length : i + 1, 0, BL_TAB); } });
+  try { POL_SRC[BL_TAB] = BL_SOURCES; } catch (e) {}
+  try { UXC_IC[BL_TAB] = '<path d="M24 6C17 16 12 22 12 29a12 12 0 0024 0c0-7-5-13-12-23z"/>'; } catch (e) {}
+  try { UX_FACTS.push(["Your blood type is part of a very old contest between people and germs. Type O children are less likely to get severe malaria, and type O people get more severe cholera.", BL_TAB, "sci"], ["In Japan, asking someone's blood type is as common as asking their sign, yet careful studies found no link between blood type and personality.", BL_TAB, "lore"]); } catch (e) {}
+  var base = grIndex;
+  grIndex = function () {
+    var ix = base();
+    if (!grIndex.bl) {
+      grIndex.bl = true;
+      BL_SCI.concat(BL_LORE, BL_SPI).forEach(function (it) { ix.push({ t: it[1], d: it[4], tab: BL_TAB, sub: it[0] === it[0] && BL_SCI.indexOf(it) > -1 ? "sci" : BL_LORE.indexOf(it) > -1 ? "lore" : "spi", k: "Blood type", hay: (it[1] + " " + it[4] + " blood type abo rh rhesus").toLowerCase() }); });
+      ["A", "B", "AB", "O"].forEach(function (k) { ix.push({ t: BL_TYPES[k].name + " blood", d: BL_TYPES[k].lore, tab: BL_TAB, sub: "mine", k: "Blood type", hay: (BL_TYPES[k].name + " blood type " + BL_TYPES[k].words).toLowerCase() }); });
+      [["Myth or evidence? blood types", "myths", "blood type myths universal donor rarest"], ["Does blood type lore fit me?", "test", "blood type personality quiz ketsueki-gata japan"], ["Who can give blood to whom", "sci", "blood donor compatibility transfusion chart universal donor"]].forEach(function (x) { ix.push({ t: x[0], d: "Blood type", tab: BL_TAB, sub: x[1], k: "Blood type", hay: x[2] }); });
+    }
+    return ix;
+  };
+  grIndex.cache = base.cache;
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-bl]") : null; if (!t) return;
+    var act = t.getAttribute("data-bl"), o, i;
+    if (act === "pick") { o = blSel(); var k = t.getAttribute("data-k"), v = t.getAttribute("data-v"); o[k] = o[k] === v ? "" : v; grSet("bl", o); grRefresh(BL_TAB); grRefocus('[data-bl="pick"][data-k="' + k + '"][data-v="' + v + '"]'); }
+    else if (act === "myth") { o = grGet("bl-myth", {}); i = t.getAttribute("data-i"); o[i] = !o[i]; grSet("bl-myth", o); grRefresh(BL_TAB); grRefocus('[data-bl="myth"][data-i="' + i + '"]'); }
+    else if (act === "mythall") { o = {}; BL_MYTHS.forEach(function (m, j) { o[j] = true; }); grSet("bl-myth", o); grRefresh(BL_TAB); }
+    else if (act === "mythreset") { grSet("bl-myth", {}); grRefresh(BL_TAB); }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target; if (!t || !t.getAttribute || t.getAttribute("data-bl") !== "par") return;
+    var o = grGet("bl-par", { a: "A", b: "B" }); o[t.getAttribute("data-k")] = t.value; grSet("bl-par", o); grRefresh(BL_TAB); grRefocus('[data-bl="par"][data-k="' + t.getAttribute("data-k") + '"]');
+  });
+  try { buildNav(); } catch (e) {}
+  try { var cur = $("t-" + state.tab); if (cur) cur.setAttribute("aria-selected", "true"); } catch (e) {}
+})();
+
+
+/* ======================================================================
+   Ages and milestones + Psychic number
+   ====================================================================== */
+var AG_TAB = "ages";
+var AG_SUBS = [["over", "Where you are now"], ["astro", "Planet cycles"], ["num", "Number cycles"], ["gen", "Your generation"], ["psy", "Psychic number"]];
+var AG_PSY = {
+  1: ["Sun", "leader, starter, self-reliant", "You feel like someone who is meant to begin things and do it your own way.", "Courage, initiative and a clear sense of self.", "Pride, bossiness and trouble asking for help.", "Start the thing, then let others in."],
+  2: ["Moon", "gentle, receptive, partner", "You feel things deeply and read the mood of a room before you say a word.", "Tact, loyalty and a gift for bringing people together.", "Mood swings, people-pleasing and indecision.", "Name what you need as clearly as you notice what others need."],
+  3: ["Jupiter", "expressive, hopeful, social", "You feel like a communicator and a creator who needs an audience, even a small one.", "Humor, imagination and an easy way with people.", "Scattered energy, exaggeration and avoiding hard conversations.", "Finish one creative thing before starting the next."],
+  4: ["Rahu (Uranus in Western use)", "builder, rebel, unconventional", "You feel different from the crowd, and you want solid ground under you at the same time.", "Practical skill, stamina and original thinking.", "Stubbornness, rigidity and sudden swings against rules.", "Build something steady, then leave room for surprise."],
+  5: ["Mercury", "quick, curious, restless", "You feel like you need variety, movement and new information to stay alive.", "Adaptability, wit and talent for trade and travel.", "Nervous energy, impatience and commitment-shyness.", "Pick a few anchors so your freedom has something to push off from."],
+  6: ["Venus", "loving, artistic, caring", "You feel responsible for beauty, comfort and the people you love.", "Warmth, taste and a talent for making a home.", "Perfectionism, over-giving and jealousy.", "Care for yourself with the same attention you give others."],
+  7: ["Ketu (Neptune in Western use)", "thinker, seeker, private", "You feel like an observer who needs solitude and meaning more than noise.", "Insight, depth and a talent for research or contemplation.", "Withdrawal, secrecy and skepticism that turns cold.", "Share what you find; do not wait until it is perfect."],
+  8: ["Saturn", "driven, serious, enduring", "You feel the weight of responsibility and a pull toward power and results.", "Discipline, stamina and a talent for organizing money and people.", "Overwork, rigidity and hiding feelings behind achievement.", "Measure success by more than output."],
+  9: ["Mars", "bold, generous, idealistic", "You feel like a fighter for others, with energy that wants a cause.", "Courage, compassion and a big-picture view.", "Temper, impulsiveness and taking on too much.", "Aim your strength at one worthy thing at a time."]
+};
+var AG_AST = [
+  [7.4, "Saturn square", "First real rules and responsibilities. Childhood tests of effort and fairness."], [9.3, "Nodal half-return", "A first sense of direction and belonging."], [11.9, "Jupiter return", "Growth spurt. The world gets wider and you ask bigger questions."],
+  [14.7, "Saturn opposition", "Teen testing of limits, identity and authority."], [18.6, "Lunar nodal return", "A life-direction checkpoint. Often leaving home or school, and choosing a path."], [21, "Uranus square", "A pull toward freedom and a break from the family script."],
+  [23.7, "Jupiter return", "Launching adult life: first career steps, travel, big beliefs."], [27.3, "Progressed Moon return", "An emotional reset. Needs you ignored come back up."], [29.5, "Saturn return", "The classic coming-of-age test. Commitments, work and relationships are judged honestly. Many people restructure their lives."],
+  [35.6, "Jupiter return", "A period of confidence and chances, often a work or family expansion."], [36.8, "Saturn square", "Pressure to build something lasting and to drop what no longer fits."], [37.2, "Second nodal return", "A second look at purpose and direction."],
+  [41, "Neptune square", "Disillusion with old dreams, then a more honest dream."], [42, "Uranus opposition", "The midlife awakening: an urge to break free, change course or be more real."], [44.2, "Saturn opposition", "A midlife reckoning with what you have built."],
+  [47.5, "Jupiter return", "Mature growth: teaching, leading, widening."], [50, "Chiron return", "Facing the old wound and turning it into wisdom for others."], [54.6, "Progressed Moon return", "A second emotional reset, often tied to home and body."],
+  [55.8, "Third nodal return", "A third direction checkpoint, often a shift toward legacy."], [58.9, "Second Saturn return", "The elder chapter begins: what to keep, what to hand on, what to let go."], [59.3, "Jupiter return", "Growth in meaning more than in goals."],
+  [71.2, "Jupiter return", "Wisdom, mentoring and generosity."], [74.4, "Fourth nodal return", "Settling what your life has meant."], [83.1, "Jupiter return", "A bright note late in life."], [84, "Uranus return", "A full lap around the sky: a rare, whole-life view."], [88.4, "Third Saturn return", "Distilled elder wisdom."]
+];
+var AG_CH = [[0, 9, "1", "Beginnings: learning to be a self and to trust the world."], [9, 18, "2", "Relating: family, friends, learning to cooperate."], [18, 27, "3", "Expressing: trying roles, voices and loves."], [27, 36, "4", "Building: commitments, work and foundations."], [36, 45, "5", "Changing: restlessness, risk and reinvention."], [45, 54, "6", "Caring: family, community and responsibility."], [54, 63, "7", "Reflecting: inner life, craft and wisdom."], [63, 72, "8", "Harvesting: power, results and legacy decisions."], [72, 81, "9", "Releasing: completion, teaching and letting go."], [81, 90, "1", "A new cycle: starting again at a higher level."]];
+var AG_GEN = [
+  ["Silent Generation", 1928, 1945, "Grew up in the Depression and war. Often tied to duty, thrift and rule-following.", "Formative years: economic hardship, World War II."],
+  ["Baby Boomers", 1946, 1964, "A large postwar generation. Often tied to growth, ideals and reshaping institutions.", "Formative years: postwar boom, television, civil rights, Vietnam."],
+  ["Generation X", 1965, 1980, "A smaller generation, often called independent and skeptical.", "Formative years: rising divorce rates, latchkey childhoods, the end of the Cold War, the early internet."],
+  ["Millennials", 1981, 1996, "Came of age with the internet and economic shocks.", "Formative years: September 11, the 2008 financial crisis, social media."],
+  ["Generation Z", 1997, 2012, "The first to grow up with smartphones and social platforms.", "Formative years: smartphones, social media, the pandemic, climate worries."],
+  ["Generation Alpha", 2013, 2025, "Born into a world of AI, tablets and streaming.", "Formative years: the pandemic, rapid AI, remote everything."]
+];
+var AG_GP = { uranus: "Where your generation breaks the rules and brings change.", neptune: "What your generation dreams about, idealizes and gets confused by.", pluto: "What your generation is called to transform and rebuild." };
+
+function agAge(P) { var t = new Date(); return t.getFullYear() - P.p.y - ((t.getMonth() + 1 < P.p.m || (t.getMonth() + 1 === P.p.m && t.getDate() < P.p.d)) ? 1 : 0); }
+function agDay(d) { var r = reduceSteps(d, false); return { base: r.value, text: String(d) + (r.steps.length ? " → " + reduceText(r) : ""), master: d === 11 || d === 22 || d === 29 ? d : 0 }; }
+function agPsy(P) { return agDay(P.p.d); }
+function agMs(P) {
+  var rets = []; try { rets = saturnReturns(P.natal).map(function (jd) { var t = jdToDate(jd); return MONS[t.m - 1] + " " + t.y; }); } catch (e) {}
+  return AG_AST.map(function (r) {
+    var when = Math.round(P.p.y + r[0]), ex = "";
+    if (r[1] === "Saturn return") ex = rets[0]; if (r[1] === "Second Saturn return") ex = rets[1]; if (r[1] === "Third Saturn return") ex = rets[2];
+    return { age: r[0], name: r[1], d: r[2], when: ex || "about " + when };
+  });
+}
+function agTag(v) { return blTag(v); }
+function agNote() { return '<p class="gr-note">Planet timings are real astronomy. The meanings are astrological tradition and are not supported by tests. Use them as a way to reflect on your own chapters.</p>'; }
+function agNeedP() { return '<p>Add your birth details to see these timings against your own life.</p>' + pfBtn("Add my birth details", "profile", "", "mc-btn"); }
+function agTable(P) {
+  var rows = P ? agMs(P) : AG_AST.map(function (r) { return { age: r[0], name: r[1], d: r[2], when: "" }; }), a = P ? agAge(P) : -1;
+  return '<div class="scroll"><table class="gr-table pf-table"><caption>Planet cycle milestones by age</caption><thead><tr><th scope="col">Age</th><th scope="col">Cycle</th><th scope="col">Traditionally read as</th>' + (P ? '<th scope="col">Your timing</th>' : "") + "</tr></thead><tbody>" + rows.map(function (r) {
+    var now = P && Math.abs(r.age - a) < 1.0;
+    return "<tr" + (now ? ' class="ag-now"' : "") + '><th scope="row">' + r.age + "</th><td>" + esc(r.name) + "</td><td>" + esc(r.d) + "</td>" + (P ? "<td>" + esc(r.when) + (r.age < a - 0.5 ? " (past)" : now ? " (now)" : "") + "</td>" : "") + "</tr>";
+  }).join("") + "</tbody></table></div>";
+}
+function agOver() {
+  var P = state.cur, body = "";
+  if (P && P.p) {
+    var a = agAge(P), ms = agMs(P), next = ms.filter(function (m) { return m.age >= a - 0.5; }).slice(0, 3), prev = ms.filter(function (m) { return m.age < a - 0.5; }).slice(-1), an = reduceSteps(a), ch = null, pin = null;
+    AG_CH.forEach(function (c) { if (a >= c[0] && a < c[1]) ch = c; });
+    try { P.num.pinnacles.forEach(function (x) { if (a >= x.ageFrom && (x.ageTo === null || a < x.ageTo)) pin = x; }); } catch (e) {}
+    var gen = null; AG_GEN.forEach(function (g) { if (P.p.y >= g[1] && P.p.y <= g[2]) gen = g; });
+    body = '<section class="panel"><h2>You are ' + a + '</h2><div class="pgrid"><div class="hubbtn"><b>' + esc(an.value) + '</b><span>Age number (' + esc(reduceText(an)) + ")</span></div>" + (ch ? '<div class="hubbtn"><b>Chapter ' + ch[2] + '</b><span>Ages ' + ch[0] + " to " + ch[1] + "</span></div>" : "") + (pin ? '<div class="hubbtn"><b>Pinnacle ' + esc(pin.value) + "</b><span>Ages " + pin.ageFrom + " to " + (pin.ageTo === null ? "end" : pin.ageTo) + "</span></div>" : "") + (gen ? '<div class="hubbtn"><b>' + esc(gen[0]) + "</b><span>Your generation</span></div>" : "") + "</div>" + (ch ? "<p><b>Chapter " + ch[2] + ":</b> " + esc(ch[3]) + "</p>" : "") + "</section>" +
+      '<section class="panel"><h2>Milestones near you</h2>' + (prev.length ? "<p>Most recent: <b>" + esc(prev[0].name) + "</b> at about " + prev[0].age + " (" + esc(prev[0].when) + "). " + esc(prev[0].d) + "</p>" : "") + next.map(function (m) { return "<p><b>Next: " + esc(m.name) + "</b> at about " + m.age + " (" + esc(m.when) + "). " + esc(m.d) + "</p>"; }).join("") + agNote() + "</section>";
+  } else body = '<section class="panel"><h2>Where you are now</h2><p class="lede">Add your birth details to see your age, your chapter and the milestones coming up.</p>' + pfBtn("Add my birth details", "profile", "", "mc-btn") + "</section>";
+  return '<section class="panel"><h2>Ages as milestones</h2><p class="lede">Many traditions mark certain ages as turning points. Astrology follows the planets as they return to where they stood at your birth. Numerology follows nine-year cycles. And your generation shares a set of years that shaped it. This section gathers all three.</p>' + blLegend() + '<div class="gr-row">' + pfBtn("Planet cycles", AG_TAB, "astro", "mc-btn gr-primary") + pfBtn("Number cycles", AG_TAB, "num") + pfBtn("Your generation", AG_TAB, "gen") + pfBtn("Psychic number", AG_TAB, "psy") + "</div></section>" + body;
+}
+function agAstro() {
+  var P = state.cur;
+  return '<section class="panel"><h2>Planet cycles and ages</h2><p class="lede">Each slow planet returns to its birth position on a schedule: Jupiter about every 12 years, the Moon\'s nodes about every 18.6, Saturn about every 29.5, Chiron about every 50 and Uranus about every 84. Astrologers read each return, and the squares and oppositions between, as a chapter break.</p>' + blTag("T") + agNote() + (P ? "" : agNeedP()) + "</section>" +
+    '<section class="panel"><h2>The milestones</h2>' + agTable(P && P.p ? P : null) + '<p class="gr-meta">Ages are approximate. Saturn return dates for you come from the app\'s chart calculation. Other dates are the birth year plus the typical age.</p></section>' +
+    '<section class="panel"><h2>The big four</h2><div class="pf-grid">' + [["Saturn return (about 29)", "The first adult test. It asks what is yours and what was just inherited. People often change jobs, relationships or cities."], ["Uranus opposition (about 42)", "A restless pull toward freedom and honesty, often called the midlife awakening."], ["Chiron return (about 50)", "A turn toward old wounds. Astrologers see it as the age when pain can become a gift to others."], ["Saturn return two (about 59)", "The elder chapter: what to keep, what to hand on."]].map(function (c) { return '<div class="pf-box"><h4>' + esc(c[0]) + "</h4><p>" + esc(c[1]) + "</p></div>"; }).join("") + "</div></section>";
+}
+function agNum() {
+  var P = state.cur, o = "";
+  var cyc = AG_CH.map(function (c) { return "<tr><th scope=\"row\">" + c[0] + " to " + c[1] + "</th><td>" + esc(c[2]) + "</td><td>" + esc(c[3]) + "</td></tr>"; }).join("");
+  o = '<section class="panel"><h2>Numerology and age</h2><p class="lede">Numerology treats life as a set of nine-year cycles and a few long periods called pinnacles. Each year of your life also reduces to a number.</p>' + blTag("T") + '<p class="gr-note">Numerology is a tradition and has not been supported by tests. Treat these as prompts for reflection.</p></section>';
+  if (P && P.p) {
+    var y = new Date().getFullYear(), a = agAge(P), rows = "";
+    for (var i = 0; i < 9; i++) { var Y = y + i, pyv = reduceSteps(reduceSteps(P.p.m).value + reduceSteps(P.p.d).value + reduceSteps(Y).value).value, b = baseDigit(pyv), th = YEAR_THEMES[b] || YEAR_THEMES[pyv] || ["", ""]; rows += "<tr" + (i === 0 ? ' class="ag-now"' : "") + '><th scope="row">' + Y + " (age " + (Y - P.p.y) + ")</th><td>" + esc(pyv) + "</td><td><b>" + esc(th[0]) + ".</b> " + esc(th[1]) + "</td></tr>"; }
+    o += '<section class="panel"><h2>Your next nine years</h2><div class="scroll"><table class="gr-table pf-table"><caption>Personal year for the next nine years</caption><thead><tr><th scope="col">Year</th><th scope="col">Number</th><th scope="col">Theme</th></tr></thead><tbody>' + rows + "</tbody></table></div></section>";
+    var pr = ""; try { pr = P.num.pinnacles.map(function (x, k) { var m = MEANINGS[x.value] || MEANINGS[baseDigit(x.value)] || ["", ""]; return "<tr><th scope=\"row\">Pinnacle " + (k + 1) + "</th><td>" + x.ageFrom + " to " + (x.ageTo === null ? "end of life" : x.ageTo) + "</td><td>" + esc(x.value) + "</td><td>" + esc(m[0]) + "</td></tr>"; }).join(""); } catch (e) {}
+    if (pr) o += '<section class="panel"><h2>Your pinnacles</h2><div class="scroll"><table class="gr-table pf-table"><thead><tr><th scope="col">Period</th><th scope="col">Ages</th><th scope="col">Number</th><th scope="col">Theme</th></tr></thead><tbody>' + pr + "</tbody></table></div>" + pfBtn("Pinnacles in numerology", "numerology", "", "mc-btn") + "</section>";
+    var an = reduceSteps(a);
+    o += '<section class="panel"><h2>Your age as a number</h2><p>At ' + a + ", your age reduces like this: <b>" + esc(reduceText(an)) + "</b>." + (isMaster(an.value) ? " " + an.value + " is a master number, which numerologists read as a more intense year of growth." : "") + " Ages 11, 22, 33, 44 and 55 are often called master ages in numerology.</p></section>";
+  } else o += '<section class="panel"><h2>Your nine-year path</h2>' + agNeedP() + "</section>";
+  return o + '<section class="panel"><h2>Ten chapters of life</h2><p class="lede">One popular way to read life in nine-year chapters.</p><div class="scroll"><table class="gr-table pf-table"><thead><tr><th scope="col">Ages</th><th scope="col">Number</th><th scope="col">Chapter</th></tr></thead><tbody>' + cyc + "</tbody></table></div></section>";
+}
+function agGen() {
+  var P = state.cur, mine = P && P.p ? P.p.y : null, B = null; try { B = P.natal.bodies; } catch (e) {}
+  var tbl = AG_GEN.map(function (g) { var on = mine !== null && mine >= g[1] && mine <= g[2]; return "<tr" + (on ? ' class="ag-now"' : "") + '><th scope="row">' + esc(g[0]) + (on ? " (you)" : "") + "</th><td>" + g[1] + " to " + g[2] + "</td><td>" + esc(g[3]) + "</td><td>" + esc(g[4]) + "</td></tr>"; }).join("");
+  var gp = B ? '<section class="panel"><h2>Your generation in the sky</h2><p class="lede">Uranus, Neptune and Pluto move so slowly that people born within several years share their signs. Astrologers read them as the mood of a generation.</p><div class="pf-grid">' + ["uranus", "neptune", "pluto"].map(function (k) { var b = B[k]; return b ? '<div class="pf-box"><h4>' + esc(k.charAt(0).toUpperCase() + k.slice(1)) + " in " + esc(SIGNS[b.sign].n) + "</h4><p>" + esc(AG_GP[k]) + "</p></div>" : ""; }).join("") + "</div>" + blTag("T") + "</section>" : "";
+  return '<section class="panel"><h2>Your age and your generation</h2><p class="lede">Part of what a certain age means depends on when you were born. A 30-year-old in 1995 and in 2025 face very different worlds. Researchers group people into generations by birth years. The groups are conventions and not precise, so treat them as rough.</p>' + blTag("M") + '<p class="gr-note">Research groups like Pew caution that people within a generation differ a lot, and that age, stage of life and events matter at least as much as birth year.</p>' + (P ? "" : agNeedP()) + "</section>" +
+    '<section class="panel"><h2>The generations</h2><div class="scroll"><table class="gr-table pf-table"><thead><tr><th scope="col">Generation</th><th scope="col">Born</th><th scope="col">Often described as</th><th scope="col">Shaped by</th></tr></thead><tbody>' + tbl + "</tbody></table></div></section>" + gp +
+    '<section class="panel"><h2>A reflection</h2><ol class="hl-ol"><li>What was happening when you were ten? How did it shape what you expect from the world?</li><li>Which of your habits belong to your age, and which to the era you grew up in?</li><li>What do people older and younger than you not understand about your chapter?</li></ol><div class="gr-row">' + grWA("The years that shaped me most were: ", "Write about this") + "</div></section>";
+}
+function agPsyCard(n, mine) {
+  var d = AG_PSY[n];
+  return hlDet("ag-psy-" + n, "Psychic number " + n + " · " + d[0], blTag("T"), '<p class="hl-when">' + esc(d[1]) + '</p><div class="pf-grid"><div class="pf-box"><h4>How it feels inside</h4><p>' + esc(d[2]) + '</p></div><div class="pf-box"><h4>Gifts</h4><p>' + esc(d[3]) + '</p></div><div class="pf-box pf-hon"><h4>Shadow</h4><p>' + esc(d[4]) + '</p></div><div class="pf-box"><h4>A tip</h4><p>' + esc(d[5]) + "</p></div></div>");
+}
+function agPsyBlock(P) {
+  var pn = agPsy(P), d = AG_PSY[pn.base], lp = P.num.lp.value, lb = baseDigit(lp), dest = reduceSteps(P.p.y + P.p.m + P.p.d, false), rel;
+  rel = pn.base === lb ? "Your psychic number and your life path match, so the person you feel you are and the path you are on point the same way." : "Your psychic number (" + pn.base + ") is how you feel inside. Your life path (" + lp + ") is the direction your life asks of you. The growth is in letting the two talk to each other.";
+  return '<div class="pgrid"><div class="hubbtn"><b>' + pn.base + "</b><span>Psychic number (" + esc(pn.text) + ')</span></div><div class="hubbtn"><b>' + esc(lp) + '</b><span>Life path</span></div><div class="hubbtn"><b>' + dest.value + "</b><span>Destiny number (whole date, reduced: " + esc(reduceText(dest)) + ")</span></div></div>" +
+    "<p><b>" + esc(d[0]) + ": " + esc(d[1]) + ".</b> " + esc(d[2]) + "</p>" + "<p>" + esc(rel) + "</p>" + (pn.master ? '<p class="gr-meta">Your birth day, ' + pn.master + ", is a master number in some writers' systems. In the psychic number system it reduces to " + pn.base + ".</p>" : "");
+}
+function agPsyPage() {
+  var P = state.cur;
+  return '<section class="panel"><h2>Your psychic number</h2><p class="lede">The psychic number (also called the root number or Mulank in the Indian tradition) comes from the day of the month you were born. It is said to describe your inner nature, the way you feel and react, while the life path number shows the road ahead.</p>' + blTag("T") + '<p class="gr-note">This is a numerology tradition and has not been supported by tests. Use it as a mirror, not a forecast.</p>' + (P && P.p && P.num ? agPsyBlock(P) : agNeedP()) + "</section>" +
+    '<section class="panel"><h2>How it is worked out</h2><ol class="hl-ol"><li>Take the day of the month you were born, for example the 29th.</li><li>Add its digits until one digit is left: 2 + 9 = 11, then 1 + 1 = 2.</li><li>That single digit is your psychic number. Days 1 to 9 stay as they are.</li></ol><p class="gr-meta">The destiny number (Bhagyank) uses the whole birth date, and your life path is a close cousin of it that keeps master numbers.</p></section>' +
+    '<section class="panel pf-list"><h2>All nine</h2>' + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(agPsyCard).join("") + "</section>";
+}
+function agRender() {
+  var s = GR.sub[AG_TAB], body;
+  if (s === "astro") body = agAstro(); else if (s === "num") body = agNum(); else if (s === "gen") body = agGen(); else if (s === "psy") body = agPsyPage(); else body = agOver();
+  return explainHTML(AG_TAB) + grSubsNav(AG_TAB) + body;
+}
+EXPLAIN[AG_TAB] = ["Ages and milestones", "Why certain ages feel like turning points, read through astrology planet cycles, numerology cycles and your generation. It also holds your psychic number.",
+  ["<b>Where you are now</b>: your age, chapter and next milestones", "<b>Planet cycles</b>: Jupiter, Saturn, nodes, Uranus and Chiron by age", "<b>Number cycles</b>: personal years, pinnacles and age numbers", "<b>Your generation</b> and <b>Psychic number</b>"],
+  "Add your birth details first so the dates are yours.",
+  "Planet timings are astronomy, and meanings are tradition. Generations are rough groupings, and numerology is not supported by tests.",
+  "Ages as milestones, plus your psychic number."];
+TAB_LABEL[AG_TAB] = "Ages & psychic number";
+GR_TABS[AG_TAB] = { label: "Ages & psychic number", group: "Your timing" };
+GR_SUBS[AG_TAB] = AG_SUBS; GR.sub[AG_TAB] = "over"; GR_RENDER[AG_TAB] = agRender;
+(function () {
+  if (TABS.indexOf(AG_TAB) === -1) TABS.push(AG_TAB); state.dirty[AG_TAB] = true;
+  SECTION_GUIDE.forEach(function (g) { if (g[0] === "Your timing" && g[2].indexOf(AG_TAB) === -1) g[2].splice(1, 0, AG_TAB); });
+  try { POL_SRC[AG_TAB] = [["Generation definitions (Pew Research)", "https://www.pewresearch.org/short-reads/2019/01/17/where-millennials-end-and-generation-z-begins/"], ["Saturn return (overview)", "https://en.wikipedia.org/wiki/Saturn_return"], ["Numerology (overview)", "https://en.wikipedia.org/wiki/Numerology"]]; } catch (e) {}
+  try { UXC_IC[AG_TAB] = '<path d="M10 40V10M10 40h30M16 32l8-8 6 5 10-14"/>'; } catch (e) {}
+  try { UX_FACTS.push(["Saturn takes about 29.5 years to circle the sky, which is why astrologers call your late twenties the Saturn return.", AG_TAB, "astro"], ["Your psychic number comes only from the day of the month you were born, while your life path uses the whole date.", AG_TAB, "psy"]); } catch (e) {}
+  var ph = profHeadlines;
+  profHeadlines = function (P) {
+    var o = ph(P);
+    try { var pn = agPsy(P); var at = -1; o.forEach(function (h, i) { if (h.l === "Life path") at = i; }); o.splice(at + 1, 0, { t: AG_TAB, l: "Psychic number", v: String(pn.base), d: "How you feel inside, from your birth day" }); } catch (e) {}
+    return o;
+  };
+  var np = renderNumProfile;
+  renderNumProfile = function (P) {
+    var h = np(P);
+    try { var pn = agPsy(P), d = AG_PSY[pn.base]; h += '<section class="panel"><h2>Your psychic number: ' + pn.base + '</h2><p class="lede">' + esc(d[2]) + '</p><p class="gr-meta">From your birth day (' + esc(pn.text) + '). Ruled by ' + esc(d[0]) + " in this tradition.</p>" + pfBtn("Open psychic number", AG_TAB, "psy", "mc-btn") + "</section>"; } catch (e) {}
+    return h;
+  };
+  var base = grIndex;
+  grIndex = function () {
+    var ix = base();
+    if (!grIndex.ag) {
+      grIndex.ag = true;
+      [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach(function (n) { ix.push({ t: "Psychic number " + n, d: AG_PSY[n][1], tab: AG_TAB, sub: "psy", k: "Psychic number", hay: ("psychic number root number mulank birth day " + n + " " + AG_PSY[n][0] + " " + AG_PSY[n][1]).toLowerCase() }); });
+      [["Saturn return", "astro", "saturn return age 29 coming of age"], ["Uranus opposition midlife", "astro", "midlife crisis age 42 uranus opposition"], ["Chiron return", "astro", "chiron return age 50 healing wound"], ["Jupiter return every 12 years", "astro", "jupiter return age 12 24 36 48"], ["Nodal return", "astro", "north node return age 18 37 56"], ["Personal year cycle and age numbers", "num", "numerology nine year cycle pinnacle age master age"], ["Generations: Gen X, Millennial, Gen Z", "gen", "generation baby boomer millennial gen z gen x birth year"], ["What your age means", "over", "age milestone turning point birthday"]].forEach(function (x) { ix.push({ t: x[0], d: "Ages and milestones", tab: AG_TAB, sub: x[1], k: "Ages", hay: x[2] }); });
+    }
+    return ix;
+  };
+  grIndex.cache = base.cache;
   try { buildNav(); } catch (e) {}
   try { var cur = $("t-" + state.tab); if (cur) cur.setAttribute("aria-selected", "true"); } catch (e) {}
 })();
@@ -26434,7 +26827,7 @@ var D3_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
 var D3_MAP = {
   profile: "cosmos", natal: "natal", astro: "orrery", planets: "orrery", numerology: "numbers", bazi: "elements", hd: "network", tarot: "tarot", timing: "lunar", calendar: "lunar", mcal: "lunar", lunar: "lunar",
   synth: "geometry", health: "helix", oldmed: "helix", mindbody: "helix", crystals: "crystal", chakras: "chakra", occult: "geometry", religion: "lotus", wisdom: "lotus", palm: "lotus", conspiracy: "network",
-  history: "geometry", glossary: "orb", games: "orb", deeper: "geometry", family: "network", compare: "rings", connect: "rings", map: "globe", pcult: "globe", pfind: "orb", psci: "network", pspi: "ennea",
+  history: "geometry", glossary: "orb", games: "orb", deeper: "geometry", family: "network", compare: "rings", connect: "rings", blood: "helix", ages: "orrery", map: "globe", pcult: "globe", pfind: "orb", psci: "network", pspi: "ennea",
   fkarma: "network", start: "orb", practice: "lotus", journal: "orb", wonder: "orrery", support: "orb", hidden: "geometry", luck: "elements", timeline: "orrery"
 };
 var D3_PAL = { gold: 0xf3d38a, teal: 0x4cc0c8, violet: 0x9b6bd6, rose: 0xf08aa8, blue: 0x5aa0ff, green: 0x6fc267, fire: 0xff7a5e, white: 0xe6ecf0, amber: 0xe8a06a };
