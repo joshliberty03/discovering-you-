@@ -4216,7 +4216,7 @@ function wheelSVG(nat, transit) {
   list.forEach(function (o) {
     var t1 = pt(o.lon, rSign), t2 = pt(o.lon, rSign - 6), gp = pt(pos[o.key], rPl);
     s.push('<line x1="' + f(t1[0]) + '" y1="' + f(t1[1]) + '" x2="' + f(t2[0]) + '" y2="' + f(t2[1]) + '" class="w-tick"/>');
-    s.push('<text x="' + f(gp[0]) + '" y="' + f(gp[1]) + '" class="w-planet" text-anchor="middle" dominant-baseline="central">' + BODIES[o.key].g + '</text>');
+    s.push('<text x="' + f(gp[0]) + '" y="' + f(gp[1]) + '" class="w-planet" data-pl="' + o.key + '" text-anchor="middle" dominant-baseline="central"><title>' + BODIES[o.key].n + ' (tap to read)</title>' + BODIES[o.key].g + '</text>');
     var tp = pt(o.lon, rAsp + 7);
     s.push('<circle cx="' + f(tp[0]) + '" cy="' + f(tp[1]) + '" r="1.8" class="w-dot"/>');
   });
@@ -5429,7 +5429,7 @@ function bpPlanetCard(nat, k) {
   }
   if (k === "node") means = "Lean toward " + SIGNS[b.sign].n + " qualities, even when they feel unfamiliar, and treat " + SIGNS[(b.sign + 6) % 12].n + " habits as tools rather than a place to hide.";
   if (k === "mc") means = "Choose work that lets you be " + S.mode.split(",")[0] + " in public; that is where your reputation grows fastest.";
-  return '<article class="card bp-pl"><div class="c-top"><span class="c-label">' + bodyLabel(k) + '</span><span class="c-sign">' + S.g + " " + esc(S.n) + "</span></div>" +
+  return '<article class="card bp-pl" id="np-' + k + '"><div class="c-top"><span class="c-label">' + bodyLabel(k) + '</span><span class="c-sign">' + S.g + " " + esc(S.n) + "</span></div>" +
     '<div class="c-title">' + esc(BODIES[k].n) + " in " + esc(S.n) + ' <span class="bp-deg">' + esc(lonDisplay(b.lon).split(" ")[0]) + (b.house ? " · " + ordinal(b.house) + " house" : "") + (b.retro ? " · retrograde" : "") + "</span></div>" +
     '<p class="c-desc">' + esc(txt) + "</p>" +
     (more ? '<details class="hsign bp-more"><summary>More on your ' + esc(BODIES[k].n) + "</summary>" + more + "</details>" : "") +
@@ -5670,7 +5670,7 @@ function jumpNavHTML(groups) {
 }
 function natalJumpNav() {
   return jumpNavHTML([
-    ["Your chart", [["astro-overview", "Overview"], ["astro-bigthree", "Big Three"], ["astro-balance", "Balance"], ["astro-wheel", "Chart wheel"]]],
+    ["Your chart", [["astro-wheel", "Back to the wheel"], ["astro-overview", "Overview"], ["astro-bigthree", "Big Three"], ["astro-balance", "Balance"]]],
     ["In depth", [["astro-planets", "Planets"], ["astro-dominant", "Dominant & degrees"], ["astro-positions", "Positions"], ["astro-houses", "Houses"], ["astro-aspects", "Aspects"], ["astro-patterns", "Patterns & stars"]]]
   ]);
 }
@@ -5681,11 +5681,17 @@ function astroJumpNav() {
   ]);
 }
 function natalWheelSection(nat) {
-  return '<section class="panel" id="astro-wheel"><h2>Your natal chart wheel</h2><div class="two"><div>' + wheelSVG(nat) +
-    '<p class="fine" style="text-align:center">The sky at your birth moment. The left edge is your Rising sign.</p></div><div>' +
-    '<h3 style="margin-top:0">How to read the wheel</h3><ul class="karma"><li>Start at the left edge, your Rising sign (Ascendant), and read counter-clockwise.</li><li>The twelve slices are houses: areas of life such as money, home, relationships and career.</li><li>Each symbol is a planet in the sign and house where it stood.</li><li>Lines across the middle are aspects: planets that help (soft lines) or strain (hard lines) each other.</li></ul>' +
+  var keys = PLANET_KEYS.concat(["node"]).concat(nat.bodies.asc ? ["asc"] : []).concat(nat.bodies.mc ? ["mc"] : []);
+  var chips = keys.map(function (k) {
+    var b = nat.bodies[k]; if (!b) return "";
+    var d = Math.floor(norm360(b.lon) % 30);
+    return '<button type="button" class="np-chip" data-np="' + k + '" aria-label="Read about your ' + esc(BODIES[k].n) + ' in ' + esc(SIGNS[b.sign].n) + '"><span class="np-g">' + BODIES[k].g + '</span><span class="np-t"><b>' + esc(BODIES[k].n) + '</b><small>' + SIGNS[b.sign].g + " " + esc(SIGNS[b.sign].n) + " " + d + "°" + (b.retro ? " Rx" : "") + "</small></span></button>";
+  }).join("");
+  return '<section class="panel natal-hero" id="astro-wheel"><h2>Your natal chart</h2><p class="lede">The sky at your birth moment. Tap any planet on the wheel, or in the list below it, to jump to its reading.</p>' +
+    '<div class="np-wheel">' + wheelSVG(nat) + '</div>' +
+    '<div class="np-chips" role="group" aria-label="Planets and points">' + chips + '</div>' +
     (nat.hasTime ? "" : '<p class="warn">No birth time was entered, so the houses and Rising sign are left out of the wheel.</p>') +
-    '<p class="fine">To see where the planets are on another date, open the Astrology section.</p></div></div></section>';
+    '<details class="xpl-more np-how"><summary><span class="xo">How to read the wheel</span><span class="xc">Hide</span></summary><ul class="karma"><li>Start at the left edge, your Rising sign (Ascendant), and read counter-clockwise.</li><li>The twelve slices are houses: areas of life such as money, home, relationships and career.</li><li>Each symbol is a planet in the sign and house where it stood.</li><li>Lines across the middle are aspects: planets that help (soft lines) or strain (hard lines) each other.</li><li>To see where the planets are on another date, open the Astrology section.</li></ul></details></section>';
 }
 var NATAL_CACHE = "";
 var _renderAstro0 = null;
@@ -5699,7 +5705,7 @@ function renderAstro(P, opts) {
   if (nat.outsideRange) warn.push("The planet formulas are tuned for 1800 to 2050. Outside that range the outer planets can be off by a degree or more.");
   var warnHtml = warn.map(function (w) { return '<p class="warn">' + esc(w) + "</p>"; }).join("");
 
-  html += "<!--NATAL_START-->" + natalJumpNav();
+  html += "<!--NATAL_START-->" + natalWheelSection(nat) + natalJumpNav();
 
   /* blueprint: signature overview, then the Big Three in depth */
   html += bpOverview(P, nat, warnHtml);
@@ -5748,7 +5754,6 @@ function renderAstro(P, opts) {
   var activeHtml = active.length ? '<ul class="karma">' + active.slice(0, 12).map(function (a) {
     return "<li>Transiting " + BODIES[a.t].n + " " + a.def.n + " natal " + BODIES[a.n].n + " (orb " + a.orb.toFixed(1) + "°): " + esc(a.def.text) + ".</li>";
   }).join("") + "</ul>" : '<p class="lede">No close aspects between the sky on that date and your natal chart.</p>';
-  html += natalWheelSection(nat);
   var skyHtml = '<section class="panel" id="astro-sky"><h2>The sky on a chosen date</h2>' +
     '<div class="two">' +
     '<div>' + wheel + '<p class="fine" style="text-align:center">Inner ring: natal planets and houses. Outer ring: the sky on ' + esc(fmtJD(opts.chartJD)) + ". Teal lines are easy aspects, orange lines are tense ones.</p></div>" +
@@ -25905,6 +25910,17 @@ GR_SUBS[HL_TAB] = HL_SUBS; GR.sub[HL_TAB] = "over"; GR_RENDER[HL_TAB] = hlRender
       try { revealScan("natal"); updateHero(); } catch (e) {}
     } catch (e) { if (window.console) console.error(e); el.innerHTML = '<section class="panel"><p class="warn">The natal chart could not be drawn.</p></section>'; }
   };
+  var nst = document.createElement("style");
+  nst.textContent = ".natal-hero .np-wheel{max-width:min(780px,100%);margin:6px auto}.natal-hero .wheel{max-width:100%}.natal-hero .w-planet{font-size:17px;cursor:pointer}.natal-hero .w-planet:hover{fill:var(--accent)}.np-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:12px 0}.np-chip{display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:inherit;text-align:left;cursor:pointer}.np-chip:hover,.np-chip:focus{border-color:var(--accent)}.np-g{font-family:var(--font-sym);font-size:1.5rem;width:1.6rem;text-align:center;color:var(--accent)}.np-t{display:flex;flex-direction:column;min-width:0}.np-t small{color:var(--muted)}#tab-natal [id^=np-],#tab-natal #astro-bigthree{scroll-margin-top:72px}.np-flash{outline:3px solid var(--accent);outline-offset:3px;transition:outline-color .6s}@media(max-width:640px){.np-chips{grid-template-columns:repeat(2,1fr)}}";
+  document.head.appendChild(nst);
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-np],[data-pl]") : null; if (!t) return;
+    var k = t.getAttribute("data-np") || t.getAttribute("data-pl"), root = $("tab-natal"); if (!root || root.hidden) return;
+    var el = k === "asc" ? root.querySelector("#astro-bigthree") : root.querySelector("#np-" + k);
+    if (!el) return;
+    var d = el.querySelector("details.bp-more"); if (d) d.open = true;
+    el.scrollIntoView({ behavior: "smooth", block: "start" }); el.classList.add("np-flash"); setTimeout(function () { el.classList.remove("np-flash"); }, 1800);
+  });
   var tabEl = document.createElement("div"); tabEl.id = "tab-natal"; tabEl.className = "out"; tabEl.setAttribute("role", "tabpanel"); tabEl.setAttribute("aria-labelledby", "t-natal"); tabEl.hidden = true;
   var an = $("tab-numerology"); an.parentNode.insertBefore(tabEl, an);
   state.dirty.natal = true;
