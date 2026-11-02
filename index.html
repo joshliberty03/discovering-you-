@@ -2669,6 +2669,8 @@ button.linklike { background: none; border: none; padding: 0; color: var(--accen
 
       <div id="tab-ages" class="out" role="tabpanel" aria-labelledby="t-ages" hidden></div>
 
+      <div id="tab-angel" class="out" role="tabpanel" aria-labelledby="t-angel" hidden></div>
+
       <div id="tab-numerology" class="out" role="tabpanel" aria-labelledby="t-numerology" hidden></div>
 
       <div id="tab-bazi" class="out" role="tabpanel" aria-labelledby="t-bazi" hidden></div>
@@ -25891,13 +25893,16 @@ GR_SUBS[HL_TAB] = HL_SUBS; GR.sub[HL_TAB] = "over"; GR_RENDER[HL_TAB] = hlRender
     if (a < 0 || b < 0) return full;
     return full.slice(0, a) + full.slice(b + 16);
   };
-  function natalHTML(P) {
+  function natalHTML(P0) {
     var cd = parseDate($("chartdate").value) || parseDate(isoToday());
-    var full = _renderAstro0(P, { chartJD: jdUTFrom(cd.y, cd.m, cd.d, 12, 0, 0), startJD: jdUTFrom(NOW.getFullYear(), NOW.getMonth() + 1, NOW.getDate(), 12, 0, 0), todayJD: jdUTFrom(NOW.getFullYear(), NOW.getMonth() + 1, NOW.getDate(), 12, 0, 0), pastLife: false, pastYears: 1, futureYears: 3 });
+    var P = ntrApply(P0), J = jdUTFrom(NOW.getFullYear(), NOW.getMonth() + 1, NOW.getDate(), 12, 0, 0);
+    function opts(fy, py) { return { chartJD: jdUTFrom(cd.y, cd.m, cd.d, 12, 0, 0), startJD: J, todayJD: J, pastLife: false, pastYears: py, futureYears: fy }; }
+    var full = _renderAstro0(P, opts(P === P0 ? 3 : 0, P === P0 ? 1 : 0));
     var a = full.indexOf("<!--NATAL_START-->"), b = full.indexOf("<!--NATAL_END-->");
-    var t0 = full.indexOf('<span id="astro-progress"></span>'), t1 = full.indexOf('<section class="panel" id="astro-predictive"');
-    var tr = t0 > 0 && t1 > t0 ? full.slice(t0, t1).replace(/astro-/g, "nt-") : "";
-    var head = tr ? '<section class="panel" id="nt-report"><h2>Your transit report</h2><p class="lede">Transits show where the planets are moving now, and when they touch the points in your natal chart. Below you get the year-by-year pulse, every exact contact for the past year and the next three, and what to watch for.</p><p class="gr-note">Astrology is a symbolic tradition. Dates come from real planet positions, but the meanings are interpretation, and tests have not shown that transits predict events.</p><div class="gr-row"><button type="button" class="mc-btn" data-gr="go" data-a="astro" data-b="">Solar return, progressions and Saturn return</button></div></section>' : "";
+    var fullT = P === P0 ? full : _renderAstro0(P0, opts(3, 1));
+    var t0 = fullT.indexOf('<span id="astro-progress"></span>'), t1 = fullT.indexOf('<section class="panel" id="astro-predictive"');
+    var tr = t0 > 0 && t1 > t0 ? fullT.slice(t0, t1).replace(/astro-/g, "nt-") : "";
+    var head = tr ? '<section class="panel" id="nt-report"><h2>Your transit report</h2><p class="lede">Transits show where the planets are moving now, and when they touch the points in your natal chart. Below you get the year-by-year pulse, every exact contact for the past year and the next three, and what to watch for.</p>' + (P === P0 ? "" : '<p class="gr-note">The transit report always uses the Western tropical chart, whichever tradition is chosen above.</p>') + '<p class="gr-note">Astrology is a symbolic tradition. Dates come from real planet positions, but the meanings are interpretation, and tests have not shown that transits predict events.</p><div class="gr-row"><button type="button" class="mc-btn" data-gr="go" data-a="astro" data-b="">Solar return, progressions and Saturn return</button></div></section>' : "";
     return a < 0 || b < 0 ? "" : full.slice(a + 18, b) + head + tr;
   }
   EXPLAIN.natal = ["Natal chart", "A map of the sky at the exact minute and place you were born: your Sun, Moon and Rising, every planet, the twelve houses and the aspects between them.",
@@ -25923,8 +25928,8 @@ GR_SUBS[HL_TAB] = HL_SUBS; GR.sub[HL_TAB] = "over"; GR_RENDER[HL_TAB] = hlRender
   nst.textContent = ".natal-hero .np-wheel{max-width:min(780px,100%);margin:6px auto}.natal-hero .wheel{max-width:100%}.natal-hero .w-planet{font-size:17px;cursor:pointer}.natal-hero .w-planet:hover{fill:var(--accent)}.np-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:12px 0}.np-chip{display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:inherit;text-align:left;cursor:pointer}.np-chip:hover,.np-chip:focus{border-color:var(--accent)}.np-g{font-family:var(--font-sym);font-size:1.5rem;width:1.6rem;text-align:center;color:var(--accent)}.np-t{display:flex;flex-direction:column;min-width:0}.np-t small{color:var(--muted)}#tab-natal [id^=np-],#tab-natal #astro-bigthree{scroll-margin-top:72px}.np-flash{outline:3px solid var(--accent);outline-offset:3px;transition:outline-color .6s}@media(max-width:640px){.np-chips{grid-template-columns:repeat(2,1fr)}}";
   document.head.appendChild(nst);
   document.addEventListener("click", function (e) {
-    var t = e.target.closest ? e.target.closest("[data-np],[data-pl]") : null; if (!t) return;
-    var k = t.getAttribute("data-np") || t.getAttribute("data-pl"), root = $("tab-natal"); if (!root || root.hidden) return;
+    var t = e.target.closest ? e.target.closest("[data-np]") : null; if (!t) return;
+    var k = t.getAttribute("data-np"), root = $("tab-natal"); if (!root || root.hidden) return;
     var el = k === "asc" ? root.querySelector("#astro-bigthree") : root.querySelector("#np-" + k);
     if (!el) return;
     var d = el.querySelector("details.bp-more"); if (d) d.open = true;
@@ -25937,6 +25942,223 @@ GR_SUBS[HL_TAB] = HL_SUBS; GR.sub[HL_TAB] = "over"; GR_RENDER[HL_TAB] = hlRender
   try { var cur = $("t-" + state.tab); if (cur) cur.setAttribute("aria-selected", "true"); } catch (e) {}
 })();
 
+
+
+/* ======================================================================
+   Natal chart: traditions, fancy wheel, clickable signs / planets / houses / stars
+   ====================================================================== */
+var NTR = { id: "western", cache: {}, cur: null };
+var NTR_LIST = {
+  western: { n: "Western", sub: "Tropical zodiac", blurb: "The most common Western way. The zodiac is tied to the seasons, so 0° Aries is the spring equinox. It uses your chosen house system and includes Uranus, Neptune and Pluto.", planets: PLANET_KEYS.concat(["node"]) },
+  vedic: { n: "Vedic", sub: "Jyotish, Lahiri", blurb: "The Indian tradition. The zodiac is tied to the stars, which shifts every planet back by about 24° compared with Western, so many people have a different sign. Houses are whole signs. The Moon sign, the Moon's nakshatra and the Moon's nodes (Rahu and Ketu) matter most, and the outer planets are not used.", planets: ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "node"] },
+  hellenistic: { n: "Hellenistic", sub: "Ancient Greek and Roman", blurb: "The astrology of the Greek and Roman world. Tropical zodiac, whole-sign houses and only the seven planets visible to the eye. Charts split into day and night (called sect), and derived points called Lots (Fortune and Spirit) are read alongside the planets.", planets: ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "node"] },
+  sidereal: { n: "Sidereal", sub: "Western, Fagan-Bradley", blurb: "Western readings on a star-based zodiac. The sky is placed as it appears against the stars (about 25° from the tropical positions), and all ten planets are used with Western meanings.", planets: PLANET_KEYS.concat(["node"]) },
+  draconic: { n: "Draconic", sub: "The soul chart", blurb: "A modern idea. The whole chart is turned so your North Node sits at 0° Aries. Astrologers read it as a chart of the soul's purpose beneath the personality chart. Houses are whole signs.", planets: PLANET_KEYS.concat(["node"]) }
+};
+var NTR_ORDER = ["western", "vedic", "hellenistic", "sidereal", "draconic"];
+var NTR_RASHI = ["Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya", "Tula", "Vrishchika", "Dhanu", "Makara", "Kumbha", "Meena"];
+var NTR_GRAHA = { sun: "Surya", moon: "Chandra", mercury: "Budha", venus: "Shukra", mars: "Mangala", jupiter: "Guru", saturn: "Shani", node: "Rahu" };
+var NTR_AB = { sun: "Su", moon: "Mo", mercury: "Me", venus: "Ve", mars: "Ma", jupiter: "Ju", saturn: "Sa", node: "Ra" };
+var NTR_CLASSIC = ["mars", "venus", "mercury", "moon", "sun", "mercury", "venus", "mars", "jupiter", "saturn", "saturn", "jupiter"];
+var NTR_COL = { sun: "#f7d070", moon: "#dfe8f2", mercury: "#e8b26a", venus: "#f59ab5", mars: "#ff6b57", jupiter: "#7aa8ff", saturn: "#9bb0a0", uranus: "#4cd0d8", neptune: "#8f8bff", pluto: "#c56a7a", node: "#c9c9d6" };
+var NTR_EL = { Fire: "#ff7a5e", Earth: "#6fc267", Air: "#e8d27a", Water: "#5aa0ff" };
+var NTR_NATURE = { sun: "Luminary, diurnal", moon: "Luminary, nocturnal", mercury: "Neutral, adapts to company", venus: "Benefic, nocturnal", mars: "Malefic, nocturnal", jupiter: "Benefic, diurnal", saturn: "Malefic, diurnal", node: "Shadow point" };
+var NTR_STAR = { malefic: "Tradition treats this star as difficult", benefic: "Tradition treats this star as helpful", royal: "One of the four Royal Stars of ancient Persia", mixed: "Tradition gives this star mixed readings" };
+
+function ntrOrig(P) { return P.__orig || P; }
+function ntrNat(P, id) {
+  P = ntrOrig(P);
+  if (id === "western") return P.natal;
+  var key = id + "|" + P.inp.dob + "|" + P.inp.tob + "|" + P.inp.lat + "|" + P.inp.lon + "|" + P.inp.tz + "|" + (P.inp.sys || "");
+  if (NTR.cache[key]) return NTR.cache[key];
+  var base = { p: P.p, time: P.time, off: P.off, lat: P.lat, lon: P.lon, sys: "whole", zod: "trop" }, nat;
+  if (id === "vedic") { base.zod = "lahiri"; nat = buildNatal(base); }
+  else if (id === "hellenistic") nat = buildNatal(base);
+  else if (id === "sidereal") { base.zod = "fagan"; base.sys = P.inp.sys || "whole"; nat = buildNatal(base); }
+  else if (id === "draconic") {
+    var T = (P.natal.jd - 2451545) / 36525;
+    AYANAMSA.draco = AYANAMSA.draco || { n: "Draconic (North Node at 0° Aries)", base: 0 };
+    AYANAMSA.draco.base = P.natal.bodies.node.trop - 1.39697 * T;
+    base.zod = "draco"; try { nat = buildNatal(base); } finally { AYANAMSA.draco.base = 0; }
+  } else nat = P.natal;
+  NTR.cache[key] = nat; return nat;
+}
+function ntrApply(P) {
+  var o = ntrOrig(P), id = grGet("nt-trad", "western");
+  if (!NTR_LIST[id]) id = "western"; NTR.id = id;
+  var nat = ntrNat(o, id); NTR.cur = { id: id, nat: nat, P: o };
+  if (id === "western") return o;
+  var P2 = {}; for (var k in o) P2[k] = o[k]; P2.natal = nat; P2.__orig = o; return P2;
+}
+function ntrDeg(lon) { var w = lon - Math.floor(lon / 30) * 30; return Math.floor(w) + "°" + ("0" + Math.floor((w - Math.floor(w)) * 60)).slice(-2) + "′"; }
+function ntrStars(nat) {
+  var prec = 1.39697 * (nat.jd - 2451545) / 36525;
+  return FIXED_STARS.map(function (s) { return { n: s[0], lon: norm360(s[1] + prec - nat.ayan), d: s[2], k: s[3] }; });
+}
+function ntrWheel(nat, id) {
+  var C = 340, rE = 312, rBand0 = 238, rBand1 = 284, rPl = 202, rH0 = 112, rH1 = 150, rAsp = 108, asc = nat.angles ? nat.angles.asc : 0, i, s = [];
+  function pt(lon, r) { var th = (180 + (lon - asc)) * RAD; return [C + r * Math.cos(th), C - r * Math.sin(th)]; }
+  function f(n) { return n.toFixed(1); }
+  function wedge(a0, a1, r0, r1) { var p1 = pt(a0, r1), p2 = pt(a1, r1), p3 = pt(a1, r0), p4 = pt(a0, r0); return "M" + f(p1[0]) + " " + f(p1[1]) + "A" + r1 + " " + r1 + " 0 0 0 " + f(p2[0]) + " " + f(p2[1]) + "L" + f(p3[0]) + " " + f(p3[1]) + "A" + r0 + " " + r0 + " 0 0 1 " + f(p4[0]) + " " + f(p4[1]) + "Z"; }
+  s.push('<svg viewBox="-16 -16 712 712" class="wheel nt-w" role="group" aria-label="Interactive natal chart wheel. Tap a planet, sign, house or star to learn what it is.">');
+  s.push('<defs><radialGradient id="ntbg" cx="50%" cy="50%" r="55%"><stop offset="0" stop-color="#2b2160"/><stop offset=".55" stop-color="#150f36"/><stop offset="1" stop-color="#080616"/></radialGradient><linearGradient id="ntgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbe7a6"/><stop offset=".5" stop-color="#d7a94b"/><stop offset="1" stop-color="#8f6420"/></linearGradient><radialGradient id="ntpl" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#3a2f78"/><stop offset="1" stop-color="#120d2c"/></radialGradient><filter id="ntglow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>');
+  s.push('<circle cx="' + C + '" cy="' + C + '" r="338" fill="url(#ntbg)"/>');
+  var seed = 7, rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  for (i = 0; i < 70; i++) { var a = rnd() * 6.2832, r = 318 + rnd() * 18; s.push('<circle cx="' + f(C + r * Math.cos(a)) + '" cy="' + f(C + r * Math.sin(a)) + '" r="' + f(0.6 + rnd() * 1.1) + '" fill="#fff" opacity="' + f(0.25 + rnd() * 0.5) + '"/>'); }
+  s.push('<g class="nt-spin"><circle cx="' + C + '" cy="' + C + '" r="327" fill="none" stroke="#d7a94b" stroke-opacity=".35" stroke-dasharray="1 9" stroke-width="2"/></g>');
+  s.push('<circle cx="' + C + '" cy="' + C + '" r="' + rE + '" fill="none" stroke="url(#ntgold)" stroke-width="2.4"/>');
+  var tk = ""; for (i = 0; i < 360; i++) { var L = i % 10 === 0 ? 11 : i % 5 === 0 ? 7 : 4, q1 = pt(i, rE), q2 = pt(i, rE - L); tk += "M" + f(q1[0]) + " " + f(q1[1]) + "L" + f(q2[0]) + " " + f(q2[1]); }
+  s.push('<path d="' + tk + '" stroke="#d7a94b" stroke-opacity=".7" stroke-width=".8" fill="none"/>');
+  /* sign band */
+  for (i = 0; i < 12; i++) {
+    var sg = SIGNS[i], g = pt(i * 30 + 15, (rBand0 + rBand1) / 2);
+    s.push('<g class="nt-sg" data-sg="' + i + '" tabindex="0" role="button" aria-label="' + esc(sg.n) + ', ' + esc(sg.el) + ' sign. Tap to learn about it."><path d="' + wedge(i * 30, i * 30 + 30, rBand0, rBand1) + '" fill="' + NTR_EL[sg.el] + '" fill-opacity=".2" stroke="#d7a94b" stroke-opacity=".55" stroke-width="1"/><text x="' + f(g[0]) + '" y="' + f(g[1]) + '" class="nt-sgl" text-anchor="middle" dominant-baseline="central" fill="' + NTR_EL[sg.el] + '">' + sg.g + '</text><title>' + esc(sg.n) + ' (tap to learn)</title></g>');
+  }
+  s.push('<circle cx="' + C + '" cy="' + C + '" r="' + rBand0 + '" fill="none" stroke="#d7a94b" stroke-opacity=".5"/>');
+  /* houses */
+  if (nat.cusp1 !== null) {
+    for (i = 0; i < 12; i++) {
+      var c0 = nat.cusps[i], c1 = nat.cusps[(i + 1) % 12], span = mod(c1 - c0, 360), mid = pt(c0 + span / 2, (rH0 + rH1) / 2);
+      s.push('<g class="nt-hs" data-hs="' + (i + 1) + '" tabindex="0" role="button" aria-label="House ' + (i + 1) + '. Tap to learn about it."><path d="' + wedge(c0, c0 + span, rH0, rH1) + '" fill="' + (i % 2 ? "#ffffff" : "#d7a94b") + '" fill-opacity=".07" stroke="#d7a94b" stroke-opacity=".35"/><text x="' + f(mid[0]) + '" y="' + f(mid[1]) + '" class="nt-hn" text-anchor="middle" dominant-baseline="central">' + (i + 1) + '</text></g>');
+      var l1 = pt(c0, rH1), l2 = pt(c0, rBand0); s.push('<line x1="' + f(l1[0]) + '" y1="' + f(l1[1]) + '" x2="' + f(l2[0]) + '" y2="' + f(l2[1]) + '" stroke="#d7a94b" stroke-opacity=".28" stroke-dasharray="2 4"/>');
+    }
+  }
+  s.push('<circle cx="' + C + '" cy="' + C + '" r="' + rH1 + '" fill="none" stroke="#d7a94b" stroke-opacity=".45"/><circle cx="' + C + '" cy="' + C + '" r="' + rH0 + '" fill="#0c0924" fill-opacity=".6" stroke="#d7a94b" stroke-opacity=".45"/>');
+  /* aspects */
+  nat.aspects.forEach(function (as) {
+    if (as.def.n === "conjunction") return;
+    var k1 = as.a, k2 = as.b; if (!nat.bodies[k1] || !nat.bodies[k2]) return;
+    if (NTR_LIST[id].planets.indexOf(k1) < 0 && k1 !== "asc" && k1 !== "mc") return; if (NTR_LIST[id].planets.indexOf(k2) < 0 && k2 !== "asc" && k2 !== "mc") return;
+    var p1 = pt(nat.bodies[k1].lon, rAsp), p2 = pt(nat.bodies[k2].lon, rAsp), hard = as.def.tone === "hard";
+    s.push('<line x1="' + f(p1[0]) + '" y1="' + f(p1[1]) + '" x2="' + f(p2[0]) + '" y2="' + f(p2[1]) + '" stroke="' + (hard ? "#f0708f" : "#4cc0c8") + '" stroke-opacity=".75" stroke-width="' + (hard ? 1.4 : 1.1) + '"><title>' + esc(BODIES[k1].n + " " + as.def.n + " " + BODIES[k2].n) + '</title></line>');
+  });
+  /* centre rosette */
+  var ros = ""; for (i = 0; i < 24; i++) { var ra = pt(i * 15, 26), rb = pt(i * 15, i % 2 ? 12 : 4); ros += "M" + f(ra[0]) + " " + f(ra[1]) + "L" + f(rb[0]) + " " + f(rb[1]); }
+  s.push('<g class="nt-pulse"><path d="' + ros + '" stroke="#f7d070" stroke-width="1.2" opacity=".8"/><circle cx="' + C + '" cy="' + C + '" r="4" fill="#f7d070"/></g>');
+  /* angles */
+  if (nat.angles) {
+    [["asc", "AC"], ["mc", "MC"], ["dc", "DC"], ["ic", "IC"]].forEach(function (q) {
+      var lon = q[0] === "dc" ? norm360(nat.bodies.asc.lon + 180) : q[0] === "ic" ? norm360(nat.bodies.mc.lon + 180) : nat.bodies[q[0]].lon, main = q[0] === "asc" || q[0] === "mc", p1 = pt(lon, rH1), p2 = pt(lon, rE + 4), lb = pt(lon, rE + 20);
+      s.push('<line x1="' + f(p1[0]) + '" y1="' + f(p1[1]) + '" x2="' + f(p2[0]) + '" y2="' + f(p2[1]) + '" stroke="#f7d070" stroke-width="' + (main ? 2.2 : 1) + '" stroke-opacity="' + (main ? 0.95 : 0.5) + '"/>');
+      s.push('<text x="' + f(lb[0]) + '" y="' + f(lb[1]) + '" class="nt-ang" text-anchor="middle" dominant-baseline="central"' + (main ? ' data-pl="' + q[0] + '" tabindex="0" role="button" aria-label="' + (q[0] === "asc" ? "Ascendant" : "Midheaven") + '. Tap to learn about it."' : "") + ">" + q[1] + "</text>");
+    });
+  }
+  /* fixed stars */
+  ntrStars(nat).forEach(function (st, k) {
+    var p = pt(st.lon, rBand1 + 14 + (k % 2) * 0);
+    s.push('<text x="' + f(p[0]) + '" y="' + f(p[1]) + '" class="nt-st" data-st="' + k + '" tabindex="0" role="button" aria-label="Fixed star ' + esc(st.n) + '. Tap to learn about it." text-anchor="middle" dominant-baseline="central">✦<title>' + esc(st.n) + ' (tap to learn)</title></text>');
+  });
+  /* planets */
+  var keys = NTR_LIST[id].planets.filter(function (k) { return nat.bodies[k]; }), list = keys.map(function (k) { return { key: k, lon: nat.bodies[k].lon }; }), pos = spreadLons(list, 10);
+  var ketu = id === "vedic" && nat.bodies.node ? norm360(nat.bodies.node.lon + 180) : null;
+  function badge(k, lon, shown, label, ketuFlag) {
+    var t1 = pt(lon, rBand0), t2 = pt(lon, rBand0 - 8), gp = pt(shown, rPl), dp = pt(shown, rPl - 32), col = NTR_COL[k] || "#fff", b = nat.bodies[k];
+    s.push('<line x1="' + f(t1[0]) + '" y1="' + f(t1[1]) + '" x2="' + f(t2[0]) + '" y2="' + f(t2[1]) + '" stroke="' + col + '" stroke-width="2"/>');
+    s.push('<g class="nt-pl' + (k === "sun" || k === "moon" ? " nt-pulse" : "") + '" data-pl="' + k + '"' + (ketuFlag ? ' data-ketu="1"' : "") + ' tabindex="0" role="button" aria-label="' + esc(label) + ' in ' + esc(SIGNS[Math.floor(lon / 30)].n) + '. Tap to learn about it."><circle cx="' + f(gp[0]) + '" cy="' + f(gp[1]) + '" r="19" fill="' + col + '" opacity=".28" filter="url(#ntglow)"/><circle cx="' + f(gp[0]) + '" cy="' + f(gp[1]) + '" r="15" fill="url(#ntpl)" stroke="' + col + '" stroke-width="1.6"/><text x="' + f(gp[0]) + '" y="' + f(gp[1] + 0.5) + '" class="nt-plg" text-anchor="middle" dominant-baseline="central" fill="' + col + '">' + (ketuFlag ? "☋" : BODIES[k].g) + '</text><title>' + esc(label) + ' (tap to learn)</title></g>');
+    s.push('<text x="' + f(dp[0]) + '" y="' + f(dp[1]) + '" class="nt-dg" text-anchor="middle" dominant-baseline="central">' + Math.floor(lon % 30) + "°" + (b && b.retro && !ketuFlag ? "℞" : "") + "</text>");
+  }
+  keys.forEach(function (k) { badge(k, nat.bodies[k].lon, pos[k], (id === "vedic" && NTR_GRAHA[k] ? NTR_GRAHA[k] + " (" + BODIES[k].n + ")" : BODIES[k].n), false); });
+  if (ketu !== null) { var kp = spreadLons(list.concat([{ key: "ketu", lon: ketu }]), 10); badge("node", ketu, kp.ketu, "Ketu", true); }
+  s.push("</svg>");
+  return s.join("");
+}
+function ntrSouthIndian(nat) {
+  var cells = [[0, 1], [0, 2], [0, 3], [1, 3], [2, 3], [3, 3], [3, 2], [3, 1], [3, 0], [2, 0], [1, 0], [0, 0]], size = 88, s = [], keys = NTR_LIST.vedic.planets;
+  var lagna = nat.bodies.asc ? nat.bodies.asc.sign : -1, byS = {};
+  keys.forEach(function (k) { var b = nat.bodies[k]; if (b) (byS[b.sign] = byS[b.sign] || []).push(NTR_AB[k] + " " + Math.floor(b.lon % 30) + "°"); });
+  if (nat.bodies.node) { var ks = Math.floor(norm360(nat.bodies.node.lon + 180) / 30); (byS[ks] = byS[ks] || []).push("Ke " + Math.floor(norm360(nat.bodies.node.lon + 180) % 30) + "°"); }
+  s.push('<svg viewBox="0 0 360 360" class="nt-si" role="group" aria-label="South Indian style Vedic chart. Tap a sign box to learn about it."><rect width="360" height="360" rx="14" fill="#120d2c"/>');
+  cells.forEach(function (c, i) {
+    var x = 4 + c[1] * 88, y = 4 + c[0] * 88, list = byS[i] || [];
+    s.push('<g class="nt-sg" data-sg="' + i + '" tabindex="0" role="button" aria-label="' + esc(NTR_RASHI[i] + " (" + SIGNS[i].n + ")") + '. Tap to learn about it."><rect x="' + x + '" y="' + y + '" width="' + size + '" height="' + size + '" fill="' + NTR_EL[SIGNS[i].el] + '" fill-opacity="' + (i === lagna ? ".28" : ".1") + '" stroke="#d7a94b" stroke-opacity=".6"/>' + (i === lagna ? '<path d="M' + x + " " + y + "l22 0l-22 22z" + '" fill="#f7d070"/>' : "") + '<text x="' + (x + size - 6) + '" y="' + (y + 14) + '" text-anchor="end" class="nt-si-s">' + esc(NTR_RASHI[i].slice(0, 6)) + "</text>" +
+      list.map(function (t, j) { return '<text x="' + (x + 8) + '" y="' + (y + 30 + j * 14) + '" class="nt-si-p">' + esc(t) + "</text>"; }).join("") + "</g>");
+  });
+  s.push('<text x="180" y="170" text-anchor="middle" class="nt-si-t">Rashi chart</text><text x="180" y="190" text-anchor="middle" class="nt-si-s">' + (lagna >= 0 ? "Lagna (rising): " + esc(NTR_RASHI[lagna]) : "No birth time: lagna unknown") + "</text></svg>");
+  return s.join("");
+}
+function ntrExtras(P, nat, id) {
+  var o = "";
+  if (id === "vedic") {
+    var nk = nakshatraOf(P), vi = vimshottari(P), now = Date.now() / 86400000 + 2440587.5, cur = null, nxt = null;
+    vi.list.forEach(function (d, i) { if (now >= d.a && now < d.b) { cur = d; nxt = vi.list[i + 1]; } });
+    var moon = nat.bodies.moon;
+    o += '<section class="panel" id="nt-vedic"><h2>Your Vedic chart</h2><div class="pf-grid"><div class="pf-box"><h4>Chandra rashi (Moon sign)</h4><p>' + esc(NTR_RASHI[moon.sign] + " (" + SIGNS[moon.sign].n + ")") + '. In Jyotish the Moon sign is read before the Sun sign.</p></div>' + (nat.bodies.asc ? '<div class="pf-box"><h4>Lagna (rising sign)</h4><p>' + esc(NTR_RASHI[nat.bodies.asc.sign] + " (" + SIGNS[nat.bodies.asc.sign].n + ")") + ".</p></div>" : "") + '<div class="pf-box"><h4>Janma nakshatra</h4><p>' + esc(nk.name) + ", pada " + nk.pada + ". Ruled by " + esc(nk.lord) + ". The nakshatras are 27 lunar mansions of 13°20′ each.</p></div>" +
+      (cur ? '<div class="pf-box"><h4>Vimshottari dasha now</h4><p>' + esc(cur.lord) + " period, from " + esc(fmtJD(cur.a).split(" about")[0]) + " to " + esc(fmtJD(cur.b).split(" about")[0]) + (nxt ? ". Next: " + esc(nxt.lord) + "." : ".") + "</p></div>" : "") + "</div>" + ntrSouthIndian(nat) + '<p class="gr-meta">South Indian style: the signs stay in fixed boxes, and the corner mark shows the rising sign. Tap any box to read about the sign.</p></section>';
+  } else if (id === "hellenistic" && nat.bodies.asc) {
+    var sun = nat.bodies.sun, moon2 = nat.bodies.moon, day = sun.house >= 7, asc = nat.bodies.asc.lon, fort = norm360(day ? asc + moon2.lon - sun.lon : asc + sun.lon - moon2.lon), spir = norm360(day ? asc + sun.lon - moon2.lon : asc + moon2.lon - sun.lon), cr = NTR_CLASSIC[nat.bodies.asc.sign];
+    o += '<section class="panel" id="nt-hell"><h2>Your Hellenistic chart</h2><div class="pf-grid"><div class="pf-box"><h4>Sect</h4><p>' + (day ? "A day chart: the Sun was above the horizon. Sun, Jupiter and Saturn are in their favor, and Jupiter is the helpful planet of the chart." : "A night chart: the Sun was below the horizon. Moon, Venus and Mars are in their favor, and Venus is the helpful planet of the chart.") + '</p></div><div class="pf-box"><h4>Chart ruler</h4><p>' + esc(BODIES[cr].n) + ", the classical ruler of your rising sign " + esc(SIGNS[nat.bodies.asc.sign].n) + '. Its condition sets the tone of the whole chart.</p></div><div class="pf-box"><h4>Lot of Fortune</h4><p>' + esc(lonDisplay(fort)) + '. A derived point linked to the body, health and material fortune.</p></div><div class="pf-box"><h4>Lot of Spirit</h4><p>' + esc(lonDisplay(spir)) + ". A derived point linked to mind, purpose and action.</p></div></div></section>";
+  } else if (id === "draconic") {
+    o += '<section class="panel" id="nt-drac"><h2>Your draconic chart</h2><p>Every position here is measured from your North Node. Your Sun is ' + esc(lonDisplay(nat.bodies.sun.lon)) + " and your Moon is " + esc(lonDisplay(nat.bodies.moon.lon)) + ' in the draconic zodiac. Astrologers compare these with your regular chart to ask what the soul wants beneath the personality.</p></section>';
+  }
+  return o;
+}
+function ntrChips(id) {
+  return '<div class="nt-trad" role="group" aria-label="Choose an astrology tradition">' + NTR_ORDER.map(function (k) { return '<button type="button" class="pm-chip' + (k === id ? " on" : "") + '" data-nt="' + k + '" aria-pressed="' + (k === id) + '"><b>' + esc(NTR_LIST[k].n) + "</b><small>" + esc(NTR_LIST[k].sub) + "</small></button>"; }).join("") + "</div>";
+}
+natalWheelSection = function (nat) {
+  var id = NTR.id, T = NTR_LIST[id], P = NTR.cur && NTR.cur.P;
+  var keys = T.planets.concat(nat.bodies.asc ? ["asc"] : []).concat(nat.bodies.mc ? ["mc"] : []);
+  var chips = keys.map(function (k) {
+    var b = nat.bodies[k]; if (!b) return "";
+    var nm = id === "vedic" && NTR_GRAHA[k] ? NTR_GRAHA[k] : BODIES[k].n;
+    return '<button type="button" class="np-chip" data-np="' + k + '" aria-label="Read about your ' + esc(BODIES[k].n) + " in " + esc(SIGNS[b.sign].n) + '"><span class="np-g">' + BODIES[k].g + '</span><span class="np-t"><b>' + esc(nm) + "</b><small>" + SIGNS[b.sign].g + " " + esc(id === "vedic" ? NTR_RASHI[b.sign] : SIGNS[b.sign].n) + " " + ntrDeg(b.lon) + "</small></span></button>";
+  }).join("");
+  return '<section class="panel natal-hero" id="astro-wheel"><h2>Your natal chart</h2><p class="lede">Pick a tradition and the chart, the readings and the tables below all change to match. Then tap any planet, sign, house or star on the wheel to see what it is.</p>' + ntrChips(id) +
+    '<div class="nt-about"><b>' + esc(T.n) + ":</b> " + esc(T.blurb) + ' <span class="hl-tag hl-t">Tradition</span></div>' +
+    '<div class="np-wheel nt-stage">' + ntrWheel(nat, id) + '</div><div id="np-info" class="np-info" aria-live="polite"><b>Tap the chart.</b> Planets, the twelve signs, the houses, the angles (AC and MC) and the small stars on the outer ring all open a short explanation here.</div>' +
+    '<div class="np-chips" role="group" aria-label="Planets and points">' + chips + "</div>" +
+    (nat.hasTime ? "" : '<p class="warn">No birth time was entered, so the houses and Rising sign are left out of the wheel.</p>') +
+    '<p class="gr-note">Different traditions place the same sky in different signs, so none of them can be called the one true chart. Astrology is a symbolic tradition, and tests have not shown it predicts personality or events.</p></section>' + (P ? ntrExtras(P, nat, id) : "");
+};
+function ntrInfo(kind, v) {
+  var c = NTR.cur; if (!c) return ""; var nat = c.nat, id = c.id, h = "", i;
+  function planetsIn(sign) { return NTR_LIST[id].planets.filter(function (k) { return nat.bodies[k] && nat.bodies[k].sign === sign; }).map(function (k) { return BODIES[k].n; }); }
+  if (kind === "pl") {
+    var k = v.k, b = nat.bodies[k]; if (!b) return "";
+    if (k === "asc" || k === "mc") {
+      return "<h3>" + (k === "asc" ? "Ascendant (AC), your rising sign" : "Midheaven (MC)") + "</h3><p>" + (k === "asc" ? "The sign rising over the eastern horizon at your birth. It shapes first impressions and how you approach new things." : "The highest point of the chart, tied to career, reputation and public life.") + " Yours is at <b>" + esc(lonDisplay(b.lon)) + "</b>.</p>";
+    }
+    var name = v.ketu ? "Ketu" : (id === "vedic" && NTR_GRAHA[k] ? NTR_GRAHA[k] + " (" + BODIES[k].n + ")" : BODIES[k].n), lon = v.ketu ? norm360(b.lon + 180) : b.lon, sg = Math.floor(lon / 30);
+    h = "<h3>" + (v.ketu ? "☋" : BODIES[k].g) + " " + esc(name) + "</h3><p><b>" + (v.ketu ? "Ketu is the Moon's South Node, always opposite Rahu. In Jyotish it points to past patterns, detachment and release." : "What it is:") + "</b> " + (v.ketu ? "" : esc(k === "node" ? "The Moon's North Node, a point where the Moon's path crosses the Sun's path. It points to direction and growth." + (id === "vedic" ? " In Jyotish it is called Rahu and points to craving and ambition." : "") : "The planet that governs " + BODIES[k].gov + ".")) + "</p>";
+    h += "<p>In your chart it is at <b>" + esc(ntrDeg(lon) + " " + (id === "vedic" ? NTR_RASHI[sg] + " (" + SIGNS[sg].n + ")" : SIGNS[sg].n)) + "</b>" + (!v.ketu && b.house ? ", in house " + b.house : "") + (b.retro && !v.ketu ? ", moving retrograde" : "") + ". The sign colors it as " + esc(SIGNS[sg].mode) + ".</p>";
+    if (id === "vedic") { var nk = NAKSHATRAS[Math.floor(lon / (360 / 27))]; h += "<p>Nakshatra: <b>" + esc(nk[0]) + "</b>, ruled by " + esc(nk[1]) + ".</p>"; }
+    if (id === "hellenistic" && NTR_NATURE[k]) h += "<p>Traditional nature: " + esc(NTR_NATURE[k]) + ".</p>";
+    if (id === "draconic") h += "<p>Measured from your North Node, which sits at 0° Aries in this chart.</p>";
+    return h + '<p><button type="button" class="mc-btn" data-ntgo="' + k + '">Read your full ' + esc(BODIES[k].n) + " reading</button></p>";
+  }
+  if (kind === "sg") {
+    i = v.i; var sgn = SIGNS[i], inS = planetsIn(i), cl = NTR_CLASSIC[i], mod_ = SIGN_RULER[i];
+    h = "<h3>" + sgn.g + " " + esc(sgn.n) + (id === "vedic" ? " (" + esc(NTR_RASHI[i]) + ")" : "") + "</h3><p><b>What it is:</b> one of the twelve 30° slices of the zodiac. " + esc(sgn.n) + " is a " + esc(sgn.mo.toLowerCase()) + " " + esc(sgn.el.toLowerCase()) + " sign, " + esc(sgn.mode) + ".</p><p>Traditional ruler: <b>" + esc(id === "vedic" ? NTR_GRAHA[cl] + " (" + BODIES[cl].n + ")" : BODIES[cl].n) + "</b>" + (mod_ && mod_ !== cl && id !== "vedic" && id !== "hellenistic" ? ", modern ruler: <b>" + esc(BODIES[mod_] ? BODIES[mod_].n : mod_) + "</b>" : "") + ".</p><p>" + (inS.length ? "In your chart: " + esc(inS.join(", ")) + "." : "None of your planets are in this sign.") + (nat.bodies.asc && nat.bodies.asc.sign === i ? " It is also your rising sign." : "") + "</p>";
+    return h;
+  }
+  if (kind === "hs") {
+    i = Number(v.i); var hd = HOUSES[i - 1], cs = nat.cusps ? Math.floor(nat.cusps[i - 1] / 30) : null, inH = NTR_LIST[id].planets.filter(function (k) { return nat.bodies[k] && nat.bodies[k].house === i; }).map(function (k) { return BODIES[k].n; });
+    return "<h3>House " + i + ": " + esc(hd[0]) + "</h3><p>" + esc(hd[1].charAt(0).toUpperCase() + hd[1].slice(1)) + ".</p><p>" + (cs !== null ? "It begins in <b>" + esc(SIGNS[cs].n) + "</b>. " : "") + (inH.length ? "Your planets here: " + esc(inH.join(", ")) + "." : "No planets here, so it is read through its ruling sign.") + "</p>";
+  }
+  if (kind === "st") {
+    var st = ntrStars(nat)[v.i]; if (!st) return "";
+    return "<h3>✦ " + esc(st.n) + "</h3><p>" + esc(st.d.charAt(0).toUpperCase() + st.d.slice(1)) + ".</p><p>On this chart it sits at <b>" + esc(lonDisplay(st.lon)) + "</b>. " + esc(NTR_STAR[st.k] || "") + ". A planet or angle within about 1.5° of a star is the traditional test for it mattering.</p>";
+  }
+  return "";
+}
+(function () {
+  var st = document.createElement("style");
+  st.textContent = ".nt-trad{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.nt-trad .pm-chip{display:flex;flex-direction:column;align-items:flex-start;min-height:48px;padding:6px 12px;text-align:left}.nt-trad .pm-chip small{font-size:.72rem;opacity:.8;font-weight:500}.nt-about{margin:6px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.nt-stage{max-width:min(720px,100%)!important}.nt-w{width:100%;height:auto;max-width:100%;display:block;margin:0 auto}.nt-w text{font-family:var(--font-sym),system-ui,sans-serif}.nt-sgl{font-size:25px}.nt-plg{font-size:20px}.nt-dg{font-size:10.5px;fill:#e9e4ff}.nt-hn{font-size:11px;fill:#cfc6ff}.nt-ang{font-size:15px;font-weight:700;fill:#f7d070;cursor:pointer}.nt-st{font-size:12px;fill:#ffe9a8;cursor:pointer}.nt-sg,.nt-hs,.nt-pl{cursor:pointer;outline:none}.nt-sg:hover path,.nt-sg:focus path{fill-opacity:.42}.nt-hs:hover path,.nt-hs:focus path{fill-opacity:.22}.nt-pl:hover circle:nth-child(2),.nt-pl:focus circle:nth-child(2){stroke-width:3}.nt-st:hover,.nt-st:focus,.nt-ang:hover,.nt-ang:focus{fill:#fff;font-size:16px}.nt-w g:focus-visible,.nt-w text:focus-visible{outline:2px solid #f7d070;outline-offset:2px}.nt-spin{transform-origin:340px 340px;animation:ntspin 240s linear infinite}.nt-pulse{animation:ntpulse 4s ease-in-out infinite}@keyframes ntspin{to{transform:rotate(360deg)}}@keyframes ntpulse{50%{opacity:.7}}.ux-rm .nt-spin,.ux-rm .nt-pulse{animation:none}@media(prefers-reduced-motion:reduce){.nt-spin,.nt-pulse{animation:none}}.np-info{margin:12px auto 0;max-width:720px;padding:12px 14px;border:1px solid var(--accent);border-radius:14px;background:var(--surface)}.np-info h3{margin:0 0 6px}.np-info p{margin:6px 0}.nt-si{width:100%;max-width:380px;display:block;margin:12px auto;border-radius:14px}.nt-si text{font-family:system-ui,sans-serif}.nt-si-s{font-size:10px;fill:#d8d0ff}.nt-si-p{font-size:11px;fill:#fff}.nt-si-t{font-size:15px;font-weight:700;fill:#f7d070}.nt-si .nt-sg{cursor:pointer}";
+  document.head.appendChild(st);
+  function show(kind, v) { var el = document.getElementById("np-info"); if (!el) return; var h = ntrInfo(kind, v); if (!h) return; el.innerHTML = h; el.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-nt],[data-ntgo],#tab-natal [data-pl],#tab-natal [data-sg],#tab-natal [data-hs],#tab-natal [data-st]") : null; if (!t) return;
+    if (t.hasAttribute("data-nt")) { grSet("nt-trad", t.getAttribute("data-nt")); NTR.id = t.getAttribute("data-nt"); state.dirty.natal = true; renderTab("natal"); var w = document.getElementById("astro-wheel"); if (w) w.scrollIntoView({ block: "start" }); return; }
+    if (t.hasAttribute("data-ntgo")) { var k = t.getAttribute("data-ntgo"), root = $("tab-natal"), el = k === "asc" || k === "mc" ? root.querySelector("#astro-bigthree") : root.querySelector("#np-" + k); if (el) { var d = el.querySelector("details.bp-more"); if (d) d.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); el.classList.add("np-flash"); setTimeout(function () { el.classList.remove("np-flash"); }, 1800); } return; }
+    if (t.hasAttribute("data-pl")) show("pl", { k: t.getAttribute("data-pl"), ketu: t.hasAttribute("data-ketu") });
+    else if (t.hasAttribute("data-sg")) show("sg", { i: Number(t.getAttribute("data-sg")) });
+    else if (t.hasAttribute("data-hs")) show("hs", { i: t.getAttribute("data-hs") });
+    else if (t.hasAttribute("data-st")) show("st", { i: Number(t.getAttribute("data-st")) });
+  });
+  document.addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") && e.target && e.target.closest && e.target.closest(".nt-w [role=button],.nt-si [role=button]")) { e.preventDefault(); e.target.closest("[role=button]").dispatchEvent(new MouseEvent("click", { bubbles: true })); }
+  });
+})();
 
 /* ======================================================================
    Blood type: science, lore, spiritual views, tie-in to you
@@ -26317,6 +26539,150 @@ GR_SUBS[AG_TAB] = AG_SUBS; GR.sub[AG_TAB] = "over"; GR_RENDER[AG_TAB] = agRender
     return ix;
   };
   grIndex.cache = base.cache;
+  try { buildNav(); } catch (e) {}
+  try { var cur = $("t-" + state.tab); if (cur) cur.setAttribute("aria-selected", "true"); } catch (e) {}
+})();
+
+
+/* ======================================================================
+   Angel numbers
+   ====================================================================== */
+var AN_TAB = "angel";
+var AN_SUBS = [["over", "Big picture"], ["list", "All the numbers"], ["sit", "By situation"], ["dec", "Decode a number"], ["log", "My sightings"], ["why", "Why we notice them"]];
+var AN_SITS = [["love", "Love and relationships"], ["work", "Work and money"], ["hard", "Hard times and grief"], ["choice", "A big decision"]];
+var AN_DIG = { 0: ["Potential", "an open door, a cycle, and it magnifies the digits beside it"], 1: ["Beginnings", "starting, independence and your own direction"], 2: ["Balance", "partnership, patience and trust"], 3: ["Expression", "creativity, joy and support"], 4: ["Foundations", "work, order and steady effort"], 5: ["Change", "movement, freedom and learning by doing"], 6: ["Care", "home, family, service and responsibility"], 7: ["Inner wisdom", "reflection, study and trust in your own insight"], 8: ["Abundance", "power, money, results and what comes back around"], 9: ["Completion", "endings, generosity and letting go"] };
+/* [number, title, core, love, work, hard, choice, ask, careful] */
+var AN = [
+  ["000", "Wholeness and a fresh start", "Read as a sign of a blank page and of being part of something larger. Zero is the number of potential.", "A reset. Let go of old stories about love before you write a new one.", "A clean slate. You can start over in a role or an approach without needing to explain the past.", "You are not at the end, only at a point of rest. Be gentle and let things be empty for a while.", "Nothing is decided yet. Clear your mind before you choose.", "What would I begin if I knew I could not fail?", "Zero is also just a number that appears often on clocks and receipts. Do not wait for a sign to start."],
+  ["111", "A new beginning", "The most famous angel number. Read as a sign that your thoughts are pointing at something new, so pay attention to what you keep thinking about.", "Be clear about what you want from love before you begin or restart anything.", "A good moment to start the project or speak up with the idea.", "One small first step is enough. You do not need the whole plan.", "Notice the option you feel pulled toward, then test it with one real action.", "What do I keep thinking about?", "Thinking about something does not make it happen. Act on it."],
+  ["222", "Balance and patience", "Read as a call to trust the process and to work with other people. Two is the number of partnership.", "Give the relationship time and listen as much as you speak. Balance giving and receiving.", "Teamwork and patience pay off. A deal or plan may need more time to settle.", "You do not have to carry it all alone. Reach out to one person you trust.", "Slow down. Weigh both sides before you commit.", "Where am I forcing something that needs patience?", "Patience is not the same as putting up with harm."],
+  ["333", "Creativity and support", "Read as encouragement to speak, make and share. Three is the number of expression, and some traditions link it with spiritual support.", "Say what you feel out loud. Play and laughter help a relationship.", "A creative idea deserves a try. Share it with others.", "You are more supported than you feel. Let people help, and let yourself feel it.", "Choose the option that lets you express more of who you are.", "What do I want to say or make?", "Support in your life is real people. Let them in."],
+  ["444", "Foundations and protection", "Read as a sign of steady ground and of being protected. Four is the number of structure and effort.", "Build trust through small, reliable actions. Stability matters more than fireworks.", "Keep going. Steady work, planning and good habits are being noticed.", "Ground yourself with basics: sleep, food, a routine and someone to talk to.", "Pick the path that is realistic and can hold weight.", "What would make my life feel more stable?", "Feeling safe comes from real supports, such as rest and people. A number cannot replace them."],
+  ["555", "Change is coming", "Read as a sign of movement and big change. Five is the number of freedom and risk.", "A relationship may shift or grow. Be honest about what needs to change.", "A change of role, place or direction may be near. Stay flexible.", "Things are moving even if it does not feel like it. Change will not stay in the same shape.", "A change is likely to follow whichever you choose. Pick the one you can learn the most from.", "What am I resisting changing?", "Not every change is a sign. Do not make big changes only because of a number."],
+  ["666", "Care, home and balance", "In pop culture 666 means evil. In angel number writing it is read as a nudge to rebalance material worries and care for home and family. The old reading in Christian texts is a separate matter.", "Check the balance of giving in your closest relationships, and take care of home life.", "Overwork or money worry may be taking over. Rebalance.", "Return to the basics of care: rest, nourishment and gentleness with yourself.", "Choose what protects your home life and your peace.", "Where have I put worry ahead of care?", "Seeing 666 is not a curse, and it is not a message of evil. If it frightens you, it is fine to ignore it."],
+  ["777", "Inner wisdom and luck", "Read as a sign you are on the right path and a call to go inward. Seven is the number of reflection and study.", "Spend time on yourself. Clarity about your own needs makes for better love.", "Learn more, specialize and trust your judgment. Take time to think.", "Quiet time and reflection help. You may find meaning here later.", "Go inward. What do you already know?", "What do I know that I keep ignoring?", "Luck is not guaranteed. Do not gamble on the strength of a number."],
+  ["888", "Abundance and returns", "Read as a sign of money, power and cycles of giving and receiving. Eight is the number of results, and its shape is an infinity loop.", "What you put in comes back. Be generous and fair.", "Results, recognition or money may be coming for work you have done. Handle power ethically.", "Cycles turn. Hard seasons do not last forever, and effort is not wasted.", "Choose what you can sustain, and consider who else is affected.", "What am I ready to receive?", "Do not spend money on the strength of a sign."],
+  ["999", "Completion", "Read as a sign that a chapter is ending. Nine is the last single digit and the number of completion.", "A phase of a relationship may end. Close it kindly and make room.", "A project, job or role may be finishing. Finish well and learn from it.", "You are close to the end of something hard. Let it be over, and let yourself grieve.", "Close one door properly before opening another.", "What is finished that I am still carrying?", "An ending is not always a loss, and not every loss is a sign. Grief takes the time it takes."],
+  ["1010", "Aligned beginnings", "Read as 1 and 0 together: a new start (1) on a blank page (0). Often linked with being in the right place on your path.", "Begin again with openness, without the baggage of the last relationship.", "A new start in a field you are already building in.", "A quiet reset. Start small.", "Begin where you are.", "What new start have I been circling?", "Alignment is a feeling to test, not a verdict."],
+  ["1111", "Alignment and a wish", "The most-quoted time on a clock. Folk custom says to make a wish at 11:11. Eleven is a master number in numerology, linked with intuition.", "A good moment to ask yourself what you want from love and to say it plainly.", "A flash of intuition about work. Write it down and look again later.", "Intuition may be loud now. Pause, breathe and listen to what is true.", "Sit with your first instinct, then check it against the facts.", "What do I want, in one sentence?", "A wish is a good prompt for clarity. It does not replace action."],
+  ["1212", "Move forward with trust", "Read as a push to step forward even if the whole path is not clear. It joins the new start of 1 with the balance of 2.", "Take a step toward the person or the honest talk you have been avoiding.", "Stay with the plan and keep moving.", "Take the next small step and trust that the next one will show.", "Move toward what you want, with eyes open.", "What step have I been postponing?", "Trust yourself. You do not need a sign to move."],
+  ["1221", "Mirror of balance", "A palindrome that reads the same both ways. Read as a call to look at the pattern of what you give and what you get.", "Mirror the care you give. Look at what is reflected back.", "Notice who pays you back in effort and who does not.", "Look at what hurts from both sides, and treat yourself with the compassion you would give a friend.", "Imagine each choice from the other side.", "What am I giving that I am not getting back?", "A neat pattern is neat. It does not need to be a message."],
+  ["1234", "Step by step", "A simple count. Read as a sign to take the next step in order, and that things are falling into sequence.", "Do not skip steps. Let the relationship grow in order.", "Take the next logical step. Plan the sequence.", "One thing at a time. You only have to do the next step.", "Take the next step, not the last one.", "What is the next step?", "Sequences feel meaningful because our minds like order."],
+  ["2222", "Trust the partnership", "A stronger form of 222. Also a time on a 24-hour clock. Read as a call to trust the people and the process you are in.", "A strong moment to commit to a conversation or a repair.", "A partner or team is key. Ask for help.", "Lean on others, and let someone know how you really are.", "Choose with someone you trust, not alone.", "Who can I let in?", "Trust has to be earned in real life. Check what people do, not only what they say."]
+];
+var AN_WHY = [
+  ["The frequency illusion", "Once you notice something, your mind starts spotting it everywhere. Psychologists call this the frequency illusion (sometimes the Baader-Meinhof effect). The number was always around. You only started counting.", "S"],
+  ["Pattern-seeking (apophenia)", "Human minds are tuned to find patterns, even in random things. It helped our ancestors spot danger, and it also makes us see faces in clouds and messages in numbers.", "S"],
+  ["The clock math", "A digital clock shows 1,440 different minutes a day, and eight of them are repeated digits (0:00, 1:11, 2:22, 3:33, 4:44, 5:55, 11:11, 22:22). If you glance at a clock 20 times a day, you will see one about once every nine days by chance, and many more times if you count patterns like 12:34 or 12:21.", "S"],
+  ["Confirmation bias", "We remember the times a number showed up while we were thinking about it, and forget the many times it did not.", "S"],
+  ["The tradition", "Angel numbers are a modern New Age idea that builds on numerology and on beliefs in guardian angels. It became popular in the 2000s and exploded on social media. There is no old tradition of 111 or 444 as messages.", "T"],
+  ["What can be useful", "Whether or not you think anyone is sending a message, a repeating number can work as a cue to pause, breathe and check in with yourself. That small habit has real value.", "S"]
+];
+var AN_SAFE = "If seeing numbers feels like a command, a threat or a message you cannot ignore, or if it comes with distress or sleeplessness, please talk with a doctor or a mental health professional. In the US you can call or text 988 at any time, or text HOME to 741741. Outside the US, findahelpline.com lists lines by country.";
+function anTag(v) { return blTag(v); }
+function anItem(n) {
+  var sit = AN_SITS.map(function (s, i) { return '<div class="pf-box"><h4>' + esc(s[1]) + "</h4><p>" + esc(n[3 + i]) + "</p></div>"; }).join("");
+  return hlDet("an-" + n[0], n[0] + ": " + n[1], anTag("T"), '<p class="pf-blurb">' + esc(n[2]) + '</p><div class="pf-grid">' + sit + '<div class="pf-box"><h4>A question to ask yourself</h4><p>' + esc(n[7]) + '</p></div><div class="pf-box pf-hon"><h4>Keep in mind</h4><p>' + esc(n[8]) + "</p></div></div>");
+}
+function anHonest() { return '<p class="gr-note">Angel numbers are a modern spiritual tradition. No evidence shows they are messages from anyone. They are useful, if at all, as a prompt for reflection, and the meanings here are the ones most often given.</p>'; }
+function anSitPage() {
+  var cur = grGet("an-sit", "love"), idx = 0; AN_SITS.forEach(function (s, i) { if (s[0] === cur) idx = i; });
+  var chips = '<div class="d3-chips" role="group" aria-label="Choose a situation">' + AN_SITS.map(function (s) { return '<button type="button" class="pm-chip' + (s[0] === cur ? " on" : "") + '" data-an="sit" data-v="' + s[0] + '" aria-pressed="' + (s[0] === cur) + '">' + esc(s[1]) + "</button>"; }).join("") + "</div>";
+  return '<section class="panel"><h2>What the number says in your situation</h2><p class="lede">Pick what is on your mind and see how each number is usually read for it.</p>' + chips + '<ul class="an-sit">' + AN.map(function (n) { return "<li><b>" + esc(n[0]) + "</b> <span>" + esc(n[1]) + "</span><br>" + esc(n[3 + idx]) + "</li>"; }).join("") + "</ul>" + anHonest() + "</section>" +
+    '<section class="panel"><h2>Where you might see them</h2><ul class="gr-ul"><li><b>On a clock.</b> Often read as a nudge to pause for a breath.</li><li><b>On a receipt or license plate.</b> Often read as a comment on money or a journey.</li><li><b>On a phone number, address or page number.</b> Read as a note about where you are right now.</li><li><b>In a dream or a song.</b> Many people read it as an echo of a thought they are already carrying.</li></ul></section>';
+}
+function anDecode(raw) {
+  var txt = String(raw || ""), d = txt.replace(/\D/g, "");
+  if (!d) return '<p class="gr-meta">Type a number or a time such as 1:11 or 4444.</p>';
+  if (d.length > 8) d = d.slice(0, 8);
+  var digs = d.split("").map(Number), sum = digs.reduce(function (a, b) { return a + b; }, 0), r = reduceSteps(sum), same = digs.every(function (x) { return x === digs[0]; }), asc = digs.length > 1 && digs.every(function (x, i) { return i === 0 || x === digs[i - 1] + 1; }), desc = digs.length > 1 && digs.every(function (x, i) { return i === 0 || x === digs[i - 1] - 1; }), pal = digs.length > 1 && d === d.split("").reverse().join("");
+  var o = "<h3>" + esc(d) + "</h3><p><b>Pattern:</b> " + (same ? "the digit " + digs[0] + " repeated " + digs.length + " times, which tradition reads as that digit's message made stronger" : asc ? "counting up, read as steady progress and the next step" : desc ? "counting down, read as release or a return to basics" : pal ? "a palindrome, read as a mirror or a balance" : "a mix of digits, read digit by digit") + ".</p>";
+  o += '<ul class="gr-ul">' + digs.filter(function (x, i) { return digs.indexOf(x) === i; }).map(function (x) { return "<li><b>" + x + " " + esc(AN_DIG[x][0]) + ":</b> " + esc(AN_DIG[x][1]) + ".</li>"; }).join("") + "</ul>";
+  o += "<p><b>Reduced:</b> " + esc(digs.join(" + ")) + " = " + sum + (r.steps.length ? " → " + esc(reduceText(r)) : "") + ". The root number is <b>" + r.value + "</b>" + (isMaster(r.value) ? ", a master number in numerology" : "") + ". " + esc(AN_DIG[baseDigit(r.value) % 10] ? AN_DIG[baseDigit(r.value) % 10][0] : "") + " is its theme.</p>";
+  var hit = AN.filter(function (n) { return n[0] === d; })[0];
+  if (hit) o += "<p>It is on the list: <b>" + esc(hit[1]) + ".</b> " + esc(hit[2]) + '</p><button type="button" class="mc-btn" data-an="open" data-v="' + esc(hit[0]) + '">See all readings</button>';
+  return o + anHonest();
+}
+function anLogPage() {
+  var log = grGet("an-log", []), cnt = {}, w = {};
+  log.forEach(function (e) { cnt[e.n] = (cnt[e.n] || 0) + 1; w[e.w] = (w[e.w] || 0) + 1; });
+  var top = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; }).slice(0, 3);
+  var form = '<form class="an-form" data-an="logform"><label>Number or time <input type="text" name="n" inputmode="numeric" maxlength="8" required placeholder="1111"></label><label>Where did you see it? <select name="w"><option>Clock</option><option>Receipt</option><option>License plate</option><option>Phone or screen</option><option>Address</option><option>Other</option></select></label><label>What was on your mind? <input type="text" name="t" maxlength="120" placeholder="optional"></label><button type="submit" class="mc-btn gr-primary">Add a sighting</button></form>';
+  return '<section class="panel"><h2>My sightings</h2><p class="lede">Write down the numbers you notice. After a few weeks, the log shows which numbers show up and what you were thinking about, and that is where the real insight usually is. It saves on this device only.</p>' + form + "</section>" +
+    '<section class="panel"><h2>Your log</h2>' + (log.length ? '<p>' + log.length + " sighting" + (log.length === 1 ? "" : "s") + ". Most often: <b>" + top.map(function (t) { return esc(t) + " (" + cnt[t] + ")"; }).join(", ") + '.</p><ul class="an-log">' + log.slice().reverse().map(function (e, i) { var real = log.length - 1 - i; return "<li><b>" + esc(e.n) + "</b> · " + esc(e.w) + " · " + esc(e.d) + (e.t ? "<br>" + esc(e.t) : "") + ' <button type="button" class="linkbtn" data-an="del" data-i="' + real + '" aria-label="Remove sighting ' + esc(e.n) + '">Remove</button></li>'; }).join("") + "</ul>" + anHonest() : '<p class="gr-meta">Nothing yet. Add your first sighting above.</p>') + "</section>";
+}
+function anOver() {
+  var P = state.cur, mine = "";
+  try {
+    if (P && P.num) {
+      var lp = P.num.lp.value, py = P.num.py.value, ps = agPsy(P).base;
+      mine = '<section class="panel"><h2>Your own numbers</h2><p class="lede">If you often notice a digit that matches one of your own numbers, that is a common way people connect angel numbers to their profile.</p><div class="pgrid"><div class="hubbtn"><b>' + esc(lp) + "</b><span>Life path: " + esc(AN_DIG[baseDigit(lp) % 10][0]) + '</span></div><div class="hubbtn"><b>' + esc(py) + "</b><span>Personal year: " + esc(AN_DIG[baseDigit(py) % 10][0]) + '</span></div><div class="hubbtn"><b>' + ps + "</b><span>Psychic number: " + esc(AN_DIG[ps][0]) + "</span></div></div></section>";
+    }
+  } catch (e) {}
+  return '<section class="panel"><h2>Angel numbers</h2><p class="lede">Angel numbers are repeating or patterned numbers, such as 111, 444 or 11:11, that people notice again and again and read as messages of guidance. Here is what each one is usually said to mean, in love, at work, in hard times and when you face a decision, and an honest look at why we notice them.</p>' + anTag("T") + anHonest() + '<div class="gr-row">' + pfBtn("All the numbers", AN_TAB, "list", "mc-btn gr-primary") + pfBtn("By situation", AN_TAB, "sit") + pfBtn("Decode a number", AN_TAB, "dec") + pfBtn("My sightings", AN_TAB, "log") + pfBtn("Why we notice them", AN_TAB, "why") + "</div></section>" + mine +
+    '<section class="panel"><h2>The ten digits</h2><div class="pf-grid">' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (x) { return '<div class="pf-box"><h4>' + x + " " + esc(AN_DIG[x][0]) + "</h4><p>" + esc(AN_DIG[x][1].charAt(0).toUpperCase() + AN_DIG[x][1].slice(1)) + ".</p></div>"; }).join("") + "</div><p class=\"gr-meta\">Longer numbers are read digit by digit, and repeating a digit makes its theme stronger.</p></section>";
+}
+function anList() {
+  return '<section class="panel"><h2>All the numbers</h2><p class="lede">Sixteen of the most-seen numbers. Open one for what it is said to mean in love, at work, in hard times and when you are choosing.</p><label class="an-find">Find a number <input type="search" data-an="find" inputmode="numeric" placeholder="Type 111, 444, 1212..." aria-label="Find an angel number"></label><div class="gr-row"><button type="button" class="mc-btn" data-an="expand">Open all</button><button type="button" class="mc-btn" data-an="collapse">Close all</button></div>' + anHonest() + "</section>" +
+    '<section class="panel pf-list" id="an-list"><h2>The numbers, one by one</h2>' + AN.map(anItem).join("") + "</section>";
+}
+function anWhy() {
+  return '<section class="panel"><h2>Why we notice them</h2><p class="lede">Seeing the same number again and again is common and feels meaningful. Here is what is going on, and what is a tradition.</p>' + blLegend() + '</section><section class="panel pf-list">' + AN_WHY.map(function (w, i) { return hlDet("an-why-" + i, w[0], blTag(w[2]), "<p>" + esc(w[1]) + "</p>"); }).join("") + '</section><section class="panel hl-safe"><h2>A note on wellbeing</h2><p>' + esc(AN_SAFE) + "</p></section>";
+}
+function anRender() {
+  var s = GR.sub[AN_TAB], body;
+  if (s === "list") body = anList(); else if (s === "sit") body = anSitPage(); else if (s === "dec") { var v = grGet("an-dec", ""); body = '<section class="panel"><h2>Decode a number</h2><p class="lede">Type any number or time you keep seeing.</p><label class="an-find">Your number <input type="text" data-an="dec" inputmode="text" maxlength="9" value="' + esc(v) + '" placeholder="1:11 or 4444" aria-label="Number to decode"></label><div id="an-dec-out" class="np-info" aria-live="polite">' + anDecode(v) + "</div></section>"; }
+  else if (s === "log") body = anLogPage(); else if (s === "why") body = anWhy(); else body = anOver();
+  return explainHTML(AN_TAB) + grSubsNav(AN_TAB) + body;
+}
+EXPLAIN[AN_TAB] = ["Angel numbers", "The numbers people keep seeing, such as 111, 444 and 11:11, what each is said to mean, and an honest look at why we notice them.",
+  ["<b>All the numbers</b>: sixteen numbers with readings for love, work, hard times and decisions", "<b>By situation</b>: choose what is on your mind", "<b>Decode a number</b> and <b>My sightings</b>", "<b>Why we notice them</b>: the psychology and the tradition"],
+  "Open All the numbers, or type your number into Decode.",
+  "Angel numbers are a modern spiritual tradition. There is no evidence they are messages. Use them as a prompt to pause and reflect.",
+  "The numbers you keep seeing, with honest labels."];
+TAB_LABEL[AN_TAB] = "Angel numbers";
+GR_TABS[AN_TAB] = { label: "Angel numbers", group: "Wisdom" };
+GR_SUBS[AN_TAB] = AN_SUBS; GR.sub[AN_TAB] = "over"; GR_RENDER[AN_TAB] = anRender;
+(function () {
+  if (TABS.indexOf(AN_TAB) === -1) TABS.push(AN_TAB); state.dirty[AN_TAB] = true;
+  SECTION_GUIDE.forEach(function (g) { if (g[0] === "Wisdom" && g[2].indexOf(AN_TAB) === -1) g[2].push(AN_TAB); });
+  try { POL_SRC[AN_TAB] = [["Angel number (overview)", "https://en.wikipedia.org/wiki/Angel_number"], ["Frequency illusion (overview)", "https://en.wikipedia.org/wiki/Frequency_illusion"], ["Apophenia (overview)", "https://en.wikipedia.org/wiki/Apophenia"]]; } catch (e) {}
+  try { UXC_IC[AN_TAB] = '<path d="M24 8c-4 0-7 3-7 7s3 7 7 7 7-3 7-7-3-7-7-7zM12 40c0-8 5-13 12-13s12 5 12 13M8 22c-4-2-5-6-3-9M40 22c4-2 5-6 3-9"/>'; } catch (e) {}
+  try { D3_MAP[AN_TAB] = "numbers"; } catch (e) {}
+  try { UX_FACTS.push(["A digital clock shows eight repeated-digit minutes a day, such as 1:11 and 11:11. Glance at the clock 20 times a day and you will see one about every nine days by chance.", AN_TAB, "why"], ["The frequency illusion means a number you start noticing seems to appear everywhere, even though it was always there.", AN_TAB, "why"]); } catch (e) {}
+  var base = grIndex;
+  grIndex = function () {
+    var ix = base();
+    if (!grIndex.an) {
+      grIndex.an = true;
+      AN.forEach(function (n) { ix.push({ t: "Angel number " + n[0] + ": " + n[1], d: n[2], tab: AN_TAB, sub: "list", k: "Angel numbers", hay: ("angel number " + n[0] + " " + n[1] + " " + n[2] + " repeating number sign meaning").toLowerCase() }); });
+      [["Decode any number", "dec", "decode number meaning 1:11 clock repeating"], ["Angel number sightings log", "log", "log journal numbers seen"], ["Angel numbers by situation", "sit", "love work grief decision angel numbers"], ["Why we notice repeating numbers", "why", "frequency illusion baader meinhof apophenia"]].forEach(function (x) { ix.push({ t: x[0], d: "Angel numbers", tab: AN_TAB, sub: x[1], k: "Angel numbers", hay: x[2] }); });
+    }
+    return ix;
+  };
+  grIndex.cache = base.cache;
+  var st = document.createElement("style");
+  st.textContent = ".an-sit{list-style:none;margin:12px 0;padding:0;display:grid;gap:8px}.an-sit li{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.an-sit b{font-size:1.1rem;color:var(--accent);margin-right:6px}.an-find{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.an-find input{flex:1 1 200px;min-height:44px;font:inherit;padding:6px 10px}.an-form{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:end}.an-form label{display:grid;gap:4px}.an-form input,.an-form select{min-height:44px;font:inherit;padding:6px 10px}.an-log{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}.an-log li{padding:8px 12px;border:1px solid var(--line);border-radius:10px}";
+  document.head.appendChild(st);
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-an]") : null; if (!t || t.tagName === "INPUT" || t.tagName === "FORM") return;
+    var a = t.getAttribute("data-an");
+    if (a === "sit") { grSet("an-sit", t.getAttribute("data-v")); grRefresh(AN_TAB); grRefocus('[data-an="sit"][data-v="' + t.getAttribute("data-v") + '"]'); }
+    else if (a === "expand" || a === "collapse") { [].forEach.call(document.querySelectorAll("#an-list details.gr-det"), function (d) { d.open = a === "expand"; if (d.getAttribute("data-pfid")) PF.open[d.getAttribute("data-pfid")] = a === "expand"; }); }
+    else if (a === "open") { var id = "an-" + t.getAttribute("data-v"); PF.open[id] = true; grSet("an-sit", grGet("an-sit", "love")); grGoTo(AN_TAB, "list"); setTimeout(function () { var el = document.querySelector('[data-pfid="' + id + '"]'); if (el) { el.open = true; el.scrollIntoView({ block: "center" }); } }, 200); }
+    else if (a === "del") { var log = grGet("an-log", []); log.splice(Number(t.getAttribute("data-i")), 1); grSet("an-log", log); grRefresh(AN_TAB); }
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target; if (!t || !t.getAttribute) return; var a = t.getAttribute("data-an");
+    if (a === "dec") { grSet("an-dec", t.value); var o = document.getElementById("an-dec-out"); if (o) o.innerHTML = anDecode(t.value); }
+    else if (a === "find") { var q = t.value.replace(/\D/g, ""); [].forEach.call(document.querySelectorAll("#an-list details.gr-det"), function (d) { var id = (d.getAttribute("data-pfid") || "").replace("an-", ""); d.hidden = !!q && id.indexOf(q) < 0; }); }
+  });
+  document.addEventListener("submit", function (e) {
+    var f = e.target; if (!f || !f.getAttribute || f.getAttribute("data-an") !== "logform") return; e.preventDefault();
+    var n = String(f.elements.n.value || "").replace(/[^0-9:]/g, "").slice(0, 8); if (!n) return;
+    var log = grGet("an-log", []), d = new Date(); log.push({ n: n.replace(/:/g, ""), w: f.elements.w.value, t: String(f.elements.t.value || "").slice(0, 120), d: MONS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear() });
+    if (log.length > 200) log = log.slice(-200); grSet("an-log", log); grRefresh(AN_TAB);
+  });
   try { buildNav(); } catch (e) {}
   try { var cur = $("t-" + state.tab); if (cur) cur.setAttribute("aria-selected", "true"); } catch (e) {}
 })();
